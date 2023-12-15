@@ -46,7 +46,7 @@ jspm_packages/
 web_modules/
 
 # TypeScript cache
-*.tsbuildinfo
+#*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
@@ -58,10 +58,10 @@ web_modules/
 .stylelintcache
 
 # Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
+#.rpt2_cache/
+#.rts2_cache_cjs/
+#.rts2_cache_es/
+#.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -85,10 +85,10 @@ web_modules/
 
 # Next.js build output
 #.next
-out
+#out
 
 # Nuxt.js build / generate output
-.nuxt
+#.nuxt
 dist
 
 # Gatsby files
