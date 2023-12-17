@@ -1,9 +1,9 @@
-// src/app/page.tsx
+// pages/index.tsx
 
 import React, { useState } from 'react';
-import { useClient } from 'next/client';
 import Header from '../components/Header';
 import SEO from '../components/SEO';
+import DarkModeToggle from '../components/DarkModeToggle';
 
 const Home: React.FC = () => {
   const [seriesId, setSeriesId] = useState('');
@@ -13,6 +13,8 @@ const Home: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Assuming you have a logic to fetch the video URL based on seriesId and episodeNo
+    // Replace the following line with your logic to fetch the video URL
     try {
       const fetchedVideoUrl = await fetchVideoUrl(seriesId, episodeNo);
       setVideoUrl(fetchedVideoUrl);
@@ -22,13 +24,12 @@ const Home: React.FC = () => {
   };
 
   const fetchVideoUrl = async (seriesId: string, episodeNo: string) => {
+    // Implement your logic to fetch the video URL here
+    // For example, make an API call or retrieve from a database
     const response = await fetch(`https://example.com/api/videos/${seriesId}/${episodeNo}`);
     const data = await response.json();
     return data.videoUrl;
   };
-
-  // Mark the component as a "Client Component"
-  useClient();
 
   return (
     <div>
@@ -36,7 +37,17 @@ const Home: React.FC = () => {
       <Header />
       <h1>Video Player</h1>
       <form onSubmit={handleSubmit}>
-        {/* ... (rest of the form code) */}
+        <label>
+          Series ID:
+          <input type="text" value={seriesId} onChange={(e) => setSeriesId(e.target.value)} />
+        </label>
+        <br />
+        <label>
+          Episode Number:
+          <input type="text" value={episodeNo} onChange={(e) => setEpisodeNo(e.target.value)} />
+        </label>
+        <br />
+        <button type="submit">Submit</button>
       </form>
       {videoUrl && (
         <div>
@@ -56,8 +67,3 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-
-// Optionally, you can export a function that marks this component as a Client Component
-export function useClientFunction() {
-  useClient();
-}
