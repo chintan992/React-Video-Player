@@ -14,10 +14,11 @@ const Navbar = () => {
         <Link to="/">Home</Link>
         <Link to="/about">About Us</Link>
         <Link to="/support">Support</Link>
+        
       </div>
-      <div className="dark-mode-toggle" onClick={toggleDarkMode}>
+      {/* <div className="dark-mode-toggle" onClick={toggleDarkMode}>
         {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-      </div>
+      </div> */}
     </nav>
   );
 };
