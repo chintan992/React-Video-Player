@@ -1,0 +1,84 @@
+/* HomePage.css */
+.home-page-container {
+  display: flex;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 10px;
+}
+
+.form-section {
+  flex: 1;
+  padding: 10px;
+}
+
+.video-section {
+  flex: 1;
+  padding: 10px;
+  margin-left: 10px;
+}
+
+.radio-buttons {
+  width: fit-content;
+  border: 1px solid #666;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: no-wrap;
+}
+
+.radio-buttons input {
+  display: none;
+}
+
+.radio-buttons label {
+  font-family: sans-serif;
+  padding: 10px 16px;
+  border-right: 1px solid #ccc;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.radio-buttons label:last-of-type {
+  border-right: 0;
+}
+
+.radio-buttons label:hover {
+  background: #eee;
+}
+
+.radio-buttons input:checked + label {
+  background: #becbff;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.form-fields label {
+  margin-bottom: 8px;
+}
+
+form button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form button:hover {
+  background-color: #45a049;
+}
+
+/* Add additional styling for the form and video sections if needed */

@@ -1,43 +1,27 @@
-// src/App.js
+// App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './components/Header';
-import Navigation from './components/Navigation';
+import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
-import AboutUsPage from './components/AboutUsPage';
-import SupportPage from './components/SupportPage';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { DarkModeProvider } from './components/DarkModeContext'; // Adjust the import path
 
-// Define your custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#FFFFB3',
-    },
-    secondary: {
-      main: '#DCAB6B',
-    },
-    error: {
-      main: '#6E0D25',
-    },
-  },
-});
+const AboutUs = () => <div>About Us</div>;
+const Support = () => <div>Support</div>;
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <DarkModeProvider>
       <Router>
         <div>
-          <Header />
-          <Navigation />
+          <Navbar />
           <Routes>
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/support" element={<SupportPage />} />
             <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/support" element={<Support />} />
           </Routes>
         </div>
       </Router>
-    </ThemeProvider>
+    </DarkModeProvider>
   );
 }
 

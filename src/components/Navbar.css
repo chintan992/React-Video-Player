@@ -1,0 +1,59 @@
+/* Navbar.css */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+.dark-mode {
+  background-color: #222;
+}
+
+.light-text {
+  color: #fff;
+}
+
+.dark-text {
+  color: #000;
+}
+
+.logo {
+  font-size: 24px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.nav-links {
+  display: flex;
+}
+
+.nav-links a {
+  color: inherit;
+  text-decoration: none;
+  margin-right: 20px;
+  transition: color 0.3s ease-in-out; /* Add transition for color property */
+}
+
+.nav-links a:hover {
+  color: #ddd; /* Change text color on hover */
+}
+
+.dark-mode-toggle {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #555;
+  color: #fff;
+  transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.logo:hover {
+  transform: scale(1.1);
+}
+
+.dark-mode-toggle:hover {
+  background-color: #777;
+  transform: scale(1.1);
+}
