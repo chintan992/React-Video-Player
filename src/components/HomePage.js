@@ -5,6 +5,7 @@ import VideoSection from './VideoSection'; // Import the VideoSection component
 
 const HomePage = () => {
   const [mediaType, setMediaType] = useState('series');
+  const [apiType, setApiType] = useState('multiembed'); // New state to manage API selection
   const [seriesId, setSeriesId] = useState('');
   const [episodeNo, setEpisodeNo] = useState('');
   const [season, setSeason] = useState('');
@@ -16,14 +17,24 @@ const HomePage = () => {
   };
 
   const getIframeSrc = () => {
-    if (mediaType === 'series') {
-      return `https://multiembed.mov/?video_id=${seriesId}&s=${season}&e=${episodeNo}`;
-    } else if (mediaType === 'movie') {
-      return `https://multiembed.mov/?video_id=${movieId}`;
+    let baseUrl;
+
+    if (apiType === 'multiembed') {
+      if (mediaType === 'series') {
+        return `https://multiembed.mov/?video_id=${seriesId}&s=${season}&e=${episodeNo}`;
+      } else if (mediaType === 'movie') {
+        return `https://multiembed.mov/?video_id=${movieId}`;
+      }
+    } else if (apiType === 'autoembed') {
+      if (mediaType === 'series') {
+        return `https://player.autoembed.cc/embed/tv/${seriesId}/${season}/${episodeNo}`;
+      } else if (mediaType === 'movie') {
+        return `https://player.autoembed.cc/embed/movie/${movieId}`;
+      }
     }
+
     return '';
   };
-  
 
   return (
     <div className="home-page-container">
@@ -50,6 +61,28 @@ const HomePage = () => {
               />
               <label htmlFor="movie">Movie</label>
             </div>
+
+            <div className="api-radio-buttons">
+              <h4>Select API:</h4>
+              <input
+                type="radio"
+                id="multiembed"
+                value="multiembed"
+                checked={apiType === 'multiembed'}
+                onChange={() => setApiType('multiembed')}
+              />
+              <label htmlFor="multiembed">MultiEmbed</label>
+
+              <input
+                type="radio"
+                id="autoembed"
+                value="autoembed"
+                checked={apiType === 'autoembed'}
+                onChange={() => setApiType('autoembed')}
+              />
+              <label htmlFor="autoembed">AutoEmbed</label>
+            </div>
+
             {mediaType === 'series' && (
               <div className="form-fields">
                 <label>
@@ -94,7 +127,6 @@ const HomePage = () => {
             )}
             <button type="submit">Submit</button>
           </form>
-          
         </div>
       </div>
       <VideoSection getIframeSrc={getIframeSrc} />
