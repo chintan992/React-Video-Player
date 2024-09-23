@@ -17,7 +17,6 @@ const HomePage = () => {
   };
 
   const getIframeSrc = () => {
-    let baseUrl;
 
     if (apiType === 'multiembed') {
       if (mediaType === 'series') {
