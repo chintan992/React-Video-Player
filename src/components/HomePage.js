@@ -1,35 +1,55 @@
 // src/components/HomePage.js
 import React, { useState } from 'react';
-import './HomePage.css'; // Import the associated CSS file
-import VideoSection from './VideoSection'; // Import the VideoSection component
+import './HomePage.css';
+import VideoSection from './VideoSection';
 
 const HomePage = () => {
   const [mediaType, setMediaType] = useState('series');
-  const [apiType, setApiType] = useState('multiembed'); // New state to manage API selection
+  const [apiType, setApiType] = useState('multiembed');
   const [seriesId, setSeriesId] = useState('');
   const [episodeNo, setEpisodeNo] = useState('');
   const [season, setSeason] = useState('');
   const [movieId, setMovieId] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle the form submission (you can add logic here)
+
+    // Validation
+    if (mediaType === 'series' && (!seriesId || !season || !episodeNo)) {
+      setError('Please fill in all series fields.');
+      return;
+    }
+
+    if (mediaType === 'movie' && !movieId) {
+      setError('Please fill in the movie ID.');
+      return;
+    }
+
+    // Clear error if validation passes
+    setError('');
   };
 
   const getIframeSrc = () => {
+    let baseUrl = '';
 
     if (apiType === 'multiembed') {
+      baseUrl = 'https://multiembed.mov/';
       if (mediaType === 'series') {
-        return `https://multiembed.mov/?video_id=${seriesId}&s=${season}&e=${episodeNo}`;
-      } else if (mediaType === 'movie') {
-        return `https://multiembed.mov/?video_id=${movieId}`;
+        return `${baseUrl}?video_id=${seriesId}&s=${season}&e=${episodeNo}`;
       }
+      return `${baseUrl}?video_id=${movieId}`;
     } else if (apiType === 'autoembed') {
+      baseUrl = 'https://player.autoembed.cc/embed/';
       if (mediaType === 'series') {
-        return `https://player.autoembed.cc/embed/tv/${seriesId}/${season}/${episodeNo}`;
-      } else if (mediaType === 'movie') {
-        return `https://player.autoembed.cc/embed/movie/${movieId}`;
+        return `${baseUrl}tv/${seriesId}/${season}/${episodeNo}`;
       }
+      return `${baseUrl}movie/${movieId}`;
+    } else if (apiType === '2embed') {
+      if (mediaType === 'series') {
+        return `https://www.2embed.cc/embedtv/${seriesId}&s=${season}&e=${episodeNo}`;
+      }
+      return `https://www.2embed.cc/embed/${movieId}`;
     }
 
     return '';
@@ -40,6 +60,7 @@ const HomePage = () => {
       <div className="form-container">
         <div className="form-section">
           <h2>Welcome to LetsStream!</h2>
+          {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="radio-buttons">
               <input
@@ -80,6 +101,15 @@ const HomePage = () => {
                 onChange={() => setApiType('autoembed')}
               />
               <label htmlFor="autoembed">AutoEmbed</label>
+
+              <input
+                type="radio"
+                id="2embed"
+                value="2embed"
+                checked={apiType === '2embed'}
+                onChange={() => setApiType('2embed')}
+              />
+              <label htmlFor="2embed">2Embed</label>
             </div>
 
             {mediaType === 'series' && (
