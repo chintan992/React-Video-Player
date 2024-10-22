@@ -1,9 +1,10 @@
 // src/components/VideoSection.js
 import React, { useRef, useEffect } from 'react';
 import './VideoSection.css';
+import { getIframeSrc } from '../api';
 
-const VideoSection = React.memo(({ getIframeSrc }) => {
-  const iframeSrc = getIframeSrc();
+const VideoSection = React.memo(({ mediaData }) => {
+  const iframeSrc = getIframeSrc(mediaData);
   const iframeRef = useRef(null);
 
   useEffect(() => {

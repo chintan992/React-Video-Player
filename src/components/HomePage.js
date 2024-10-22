@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import './HomePage.css';
 import VideoSection from './VideoSection';
 import MediaForm from './MediaForm';
+import { getIframeSrc } from '../api';
 
 const HomePage = React.memo(() => {
   const [mediaData, setMediaData] = useState({
@@ -31,30 +32,6 @@ const HomePage = React.memo(() => {
     const validationError = validateForm();
     setError(validationError);
   }, [validateForm]);
-
-  const getIframeSrc = useCallback(() => {
-    const { type, apiType, seriesId, season, episodeNo, movieId } = mediaData;
-    let baseUrl = '';
-
-    switch (apiType) {
-      case 'multiembed':
-        baseUrl = 'https://multiembed.mov/';
-        return type === 'series'
-          ? `${baseUrl}?video_id=${seriesId}&s=${season}&e=${episodeNo}`
-          : `${baseUrl}?video_id=${movieId}`;
-      case 'autoembed':
-        baseUrl = 'https://player.autoembed.cc/embed/';
-        return type === 'series'
-          ? `${baseUrl}tv/${seriesId}/${season}/${episodeNo}`
-          : `${baseUrl}movie/${movieId}`;
-      case '2embed':
-        return type === 'series'
-          ? `https://www.2embed.cc/embedtv/${seriesId}&s=${season}&e=${episodeNo}`
-          : `https://www.2embed.cc/embed/${movieId}`;
-      default:
-        return '';
-    }
-  }, [mediaData]);
 
   useEffect(() => {
     let popupBlockerInterval;
@@ -97,9 +74,9 @@ const HomePage = React.memo(() => {
           />
         </div>
       </div>
-      <VideoSection getIframeSrc={getIframeSrc} />
+      <VideoSection getIframeSrc={() => getIframeSrc(mediaData)} />
     </div>
   );
 });
 
-export default HomePage;
+export default HomePage; 
