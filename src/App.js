@@ -2,7 +2,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import HomePage from './components/HomePage';
 import AboutUs from './components/AboutUs';
 import Support from './components/Support';
 import Search from './components/Search';
