@@ -1,24 +1,36 @@
 // src/components/Navbar.js
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
 
   return (
-    <nav className={isDarkMode ? 'dark-mode' : 'light-mode'}>
-      <div className="logo">LetsStream</div>
-      <div className={`nav-links ${isDarkMode ? 'dark-text' : 'light-text'}`}>
-        <Link to="/">Home</Link>
-        <Link to="/about">About Us</Link>
-        <Link to="/support">Support</Link>
-        
+    <nav className={`navbar ${isDarkMode ? 'dark-mode' : ''} ${isMenuOpen ? 'menu-open' : ''}`}>
+      <div className="navbar-container">
+        <Link to="/" className="logo">LetsStream</Link>
+        <div className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
+          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+          <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About Us</Link>
+          <Link to="/support" className={location.pathname === '/support' ? 'active' : ''}>Support</Link>
+        </div>
+        <button className="dark-mode-toggle" onClick={toggleDarkMode}>
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
+        <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-       <div className="dark-mode-toggle" onClick={toggleDarkMode}>
-        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-      </div> 
     </nav>
   );
 };

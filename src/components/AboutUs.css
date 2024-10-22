@@ -1,0 +1,46 @@
+/* src/components/AboutUs.css */
+.about-us-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+  }
+  
+  .about-us-container h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .about-section {
+    margin-bottom: 30px;
+  }
+  
+  .about-section h2 {
+    color: #4CAF50;
+    margin-bottom: 15px;
+  }
+  
+  .about-section p {
+    margin-bottom: 15px;
+  }
+  
+  .about-section ul {
+    list-style-type: disc;
+    margin-left: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .about-us-container {
+      padding: 15px;
+    }
+    
+    .about-us-container h1 {
+      font-size: 24px;
+    }
+    
+    .about-section h2 {
+      font-size: 20px;
+    }
+  }

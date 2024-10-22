@@ -1,0 +1,53 @@
+/* src/components/Support.css */
+.support-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+  }
+  
+  .support-container h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .support-section {
+    margin-bottom: 30px;
+  }
+  
+  .support-section h2 {
+    color: #4CAF50;
+    margin-bottom: 15px;
+  }
+  
+  .support-section h3 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .support-section p {
+    margin-bottom: 15px;
+  }
+  
+  .support-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .support-section li {
+    margin-bottom: 20px;
+  }
+  
+  .dmca-disclaimer {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  .dmca-disclaimer p {
+    font-size: 14px ;
+    margin-bottom: 10px;
+  }
