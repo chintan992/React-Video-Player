@@ -1,3 +1,4 @@
+// src/components/VideoSection.js
 import React, { useRef, useEffect } from 'react';
 import './VideoSection.css';
 
@@ -6,11 +7,13 @@ const VideoSection = React.memo(({ getIframeSrc }) => {
   const iframeRef = useRef(null);
 
   useEffect(() => {
+    const currentIframe = iframeRef.current;
+
     const handleLoad = () => {
       try {
         // Frame Buster Buster
-        if (iframeRef.current && iframeRef.current.contentWindow) {
-          iframeRef.current.contentWindow.addEventListener('beforeunload', (event) => {
+        if (currentIframe && currentIframe.contentWindow) {
+          currentIframe.contentWindow.addEventListener('beforeunload', (event) => {
             event.preventDefault();
             return event.returnValue = "Are you sure you want to exit?";
           });
@@ -20,13 +23,13 @@ const VideoSection = React.memo(({ getIframeSrc }) => {
       }
     };
 
-    if (iframeRef.current) {
-      iframeRef.current.addEventListener('load', handleLoad);
+    if (currentIframe) {
+      currentIframe.addEventListener('load', handleLoad);
     }
 
     return () => {
-      if (iframeRef.current) {
-        iframeRef.current.removeEventListener('load', handleLoad);
+      if (currentIframe) {
+        currentIframe.removeEventListener('load', handleLoad);
       }
     };
   }, [iframeSrc]);
