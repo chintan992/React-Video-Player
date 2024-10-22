@@ -15,6 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:no-test": "react-scripts build --ignore-scripts",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
