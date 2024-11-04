@@ -1,5 +1,36 @@
 /* src/components/MediaForm.css */
-/* ... (keep all existing styles) */
+@import '../styles/colors.css';
+
+.form-container {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.form-section {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.form-section:hover {
+  transform: translateY(-5px);
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.error-message {
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+  text-align: center;
+}
 
 .season-select {
   width: 100%;
@@ -16,6 +47,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .episode-button {
@@ -37,6 +69,14 @@
 }
 
 /* Dark mode adjustments */
+.dark-mode .form-section {
+  background-color: var(--secondary-color);
+}
+
+.dark-mode h2 {
+  color: var(--text-dark);
+}
+
 .dark-mode .season-select {
   background-color: var(--input-background-dark, #34495e);
   color: var(--text-color-dark, #ecf0f1);
@@ -45,7 +85,7 @@
 
 .dark-mode .episode-button {
   background-color: var(--input-background-dark, #34495e);
-  color: var(--text-color-dark, #ecf0 f1);
+  color: var(--text-color-dark, #ecf0f1);
   border-color: var(--border-color-dark, #7f8c8d);
 }
 
@@ -54,4 +94,46 @@
   background-color: var(--primary-color, #3498db);
   color: #ffffff;
   border-color: var(--primary-color, #3498db);
+}
+
+
+/* Add this to your MediaForm.css file */
+
+.submit-button {
+  background-color: var(--primary-color, #3498db);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  outline: none;
+  display: block;
+  margin: 20px auto 0;
+}
+
+.submit-button:hover {
+  background-color: var(--primary-color-dark, #2980b9);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode styles */
+.dark-mode .submit-button {
+  background-color: var(--primary-color-dark, #2980b9);
+  color: var(--text-color-dark, #ecf0f1);
+}
+
+.dark-mode .submit-button:hover {
+  background-color: var(--primary-color, #3498db);
 }

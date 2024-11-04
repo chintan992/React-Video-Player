@@ -148,3 +148,115 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
+
+
+/* Add these to your existing Search.css */
+
+/* Loading Indicator Styles */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* No Results Message */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-light);
+  font-size: 1.2rem;
+}
+
+/* Error Message Enhancement */
+.error-message {
+  background-color: rgba(243, 156, 18, 0.1); /* Using accent-color with opacity */
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+/* Search Input Focus State */
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2); /* Using primary-color with opacity */
+}
+
+/* Dark Mode Additions */
+.dark-mode .no-results {
+  color: var(--text-dark);
+}
+
+.dark-mode .spinner {
+  border-color: var(--border-color-dark);
+  border-top-color: var(--primary-color);
+}
+
+.dark-mode .error-message {
+  background-color: rgba(243, 156, 18, 0.05);
+  border-color: var(--accent-color);
+}
+
+/* Accessibility Focus Styles */
+.media-item:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-color: var(--primary-color);
+}
+
+/* Loading Skeleton Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--background-light) 25%,
+    var(--border-color) 50%,
+    var(--background-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark-mode .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--background-dark) 25%,
+    var(--border-color-dark) 50%,
+    var(--background-dark) 75%
+  );
+  background-size: 200% 100%;
+}
