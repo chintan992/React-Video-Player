@@ -1,7 +1,7 @@
 // src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDarkMode } from './DarkModeContext';
+import { useDarkMode } from '../components/DarkModeContext';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -28,9 +28,13 @@ const Navbar = () => {
           <Link to="/support" className={location.pathname === '/support' ? 'active' : ''}>Support</Link>
         </div>
         <button className="dark-mode-toggle" onClick={toggleDarkMode}>
-          {isDarkMode ? '☀️' : '🌙'}
+          {isDarkMode ? '🕶' : '🕶️'}
         </button>
         <button className="search-button" onClick={handleSearchClick}>🔍</button>
+        <div className="auth-button-container">
+          <Link to="/login" className="auth-button">Login</Link>
+          <Link to="/signup" className="auth-button">Sign Up</Link>
+        </div>
         <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span></span>
           <span></span>

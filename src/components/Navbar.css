@@ -260,3 +260,28 @@
   }
 }
 
+/* src/components/Navbar.css */
+.auth-button-container {
+  display: flex;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.auth-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.auth-button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.auth-button:last-child {
+  margin-right: 0;
+}

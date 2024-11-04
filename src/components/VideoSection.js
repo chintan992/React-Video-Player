@@ -1,11 +1,12 @@
 // src/components/VideoSection.js
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import './VideoSection.css';
 import { getIframeSrc } from '../api';
 
 const VideoSection = React.memo(({ mediaData }) => {
   const iframeSrc = getIframeSrc(mediaData);
   const iframeRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const currentIframe = iframeRef.current;
@@ -35,6 +36,10 @@ const VideoSection = React.memo(({ mediaData }) => {
     };
   }, [iframeSrc]);
 
+  const handleOverlayClick = () => {
+    setIsPlaying(true);
+  };
+
   return (
     <div className="video-section">
       {iframeSrc && (
@@ -46,7 +51,14 @@ const VideoSection = React.memo(({ mediaData }) => {
             allowFullScreen
             title="Video Player"
           ></iframe>
-          <div className="overlay"></div>
+          {!isPlaying && (
+            <div 
+              className="overlay"
+              onClick={handleOverlayClick}
+            >
+              <div className="play-icon"></div>
+            </div>
+          )}
         </>
       )}
     </div>
