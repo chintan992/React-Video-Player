@@ -76,7 +76,7 @@ function WatchPage() {
         if (tagName.toLowerCase() === 'a') {
           element.addEventListener('click', (e) => {
             const href = element.getAttribute('href');
-            if (href && (href.startsWith('javascript:window.open') || href.includes('popup'))) {
+            if (href && (href.includes('window.open') || href.includes('popup'))) {
               e.preventDefault();
               console.log('Prevented popup from link click');
             }
