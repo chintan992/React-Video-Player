@@ -1,6 +1,6 @@
 // src/components/Discover.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import './Discover.css';
 
@@ -18,6 +18,7 @@ const streamingServices = [
 ];
 
 function Discover() {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState({
     latestMovies: [],
     trendingMovies: [],
@@ -106,6 +107,17 @@ function Discover() {
     }
   };
 
+  const handleViewMore = (type, category, title) => {
+    navigate('/expanded-view', { 
+      state: { 
+        type, // 'movie' or 'tv'
+        category, // 'latest' or 'trending'
+        title,
+        streamingService: activeStreamingService 
+      } 
+    });
+  };
+
   const renderMediaItem = (item, mediaType) => (
     <Link 
       to={`/watch/${mediaType}/${item.id}`} 
@@ -188,19 +200,35 @@ function Discover() {
             </button>
           ))}
         </div>
-      </header>
+       </header>
 
       {(activeCategory === 'all' || activeCategory === 'movies') && (
         <>
           <section className="media-section">
-            <h2>Latest Movies</h2>
+            <div className="section-header">
+              <h2>Latest Movies</h2>
+              <button 
+                className="view-more-button"
+                onClick={() => handleViewMore('movie', 'latest', 'Latest Movies')}
+              >
+                View More
+              </button>
+            </div>
             <div className="media-list">
               {categories.latestMovies.map(movie => renderMediaItem(movie, 'movie'))}
             </div>
           </section>
-          {categories. trendingMovies.length > 0 && (
+          {categories.trendingMovies.length > 0 && (
             <section className="media-section">
-              <h2>Trending Movies</h2>
+              <div className="section-header">
+                <h2>Trending Movies</h2>
+                <button 
+                  className="view-more-button"
+                  onClick={() => handleViewMore('movie', 'trending', 'Trending Movies')}
+                >
+                  View More
+                </button>
+              </div>
               <div className="media-list">
                 {categories.trendingMovies.map(movie => renderMediaItem(movie, 'movie'))}
               </div>
@@ -212,14 +240,30 @@ function Discover() {
       {(activeCategory === 'all' || activeCategory === 'tv') && (
         <>
           <section className="media-section">
-            <h2>Latest TV Shows</h2>
+            <div className="section-header">
+              <h2>Latest TV Shows</h2>
+              <button 
+                className="view-more-button"
+                onClick={() => handleViewMore('tv', 'latest', 'Latest TV Shows')}
+              >
+                View More
+              </button>
+            </div>
             <div className="media-list">
               {categories.latestTVShows.map(tvShow => renderMediaItem(tvShow, 'tv'))}
             </div>
           </section>
           {categories.trendingTVShows.length > 0 && (
             <section className="media-section">
-              <h2>Trending TV Shows</h2>
+              <div className="section-header">
+                <h2>Trending TV Shows</h2>
+                <button 
+                  className="view-more-button"
+                  onClick={() => handleViewMore('tv', 'trending', 'Trending TV Shows')}
+                >
+                  View More
+                </button>
+              </div>
               <div className="media-list">
                 {categories.trendingTVShows.map(tvShow => renderMediaItem(tvShow, 'tv'))}
               </div>

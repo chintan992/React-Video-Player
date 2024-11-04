@@ -1,7 +1,7 @@
-/* src/components/Discover.css */
+/* src/components/ExpandedView.css */
 @import '../styles/colors.css';
 
-.discover-page {
+.expanded-view {
   min-height: 100vh;
   padding: 2rem;
   transition: all 0.3s ease;
@@ -9,45 +9,37 @@
   color: var(--text-light);
 }
 
-.discover-header {
+.expanded-header {
   max-width: 1200px;
   margin: 0 auto 3rem;
-  text-align: center;
-}
-
-.category-nav {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.category-nav button {
+.back-button {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 25px;
-  background-color: var(--secondary-color);
-  color: var(--text-dark);
+  background-color: var(--primary-color);
+  color: white;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.category-nav button.active {
-  background-color: var(--primary-color);
+.back-button:hover {
+  background-color: var(--secondary-color);
   transform: scale(1.05);
 }
 
-.media-section {
-  max-width: 1200px;
-  margin: 0 auto 4rem;
-}
-
-.media-list {
+.media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 2rem;
   margin-top: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .media-item {
@@ -147,7 +139,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100px;
 }
 
 .loading-spinner::before {
@@ -169,49 +161,15 @@
   }
 }
 
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+.end-message {
   text-align: center;
   padding: 2rem;
-}
-
-.error-container h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-}
-
-.error-container p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
   color: var(--text-light);
-  max-width: 600px;
-}
-
-.error-container button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 25px;
-  background-color: var(--primary-color);
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.error-container button:hover {
-  background-color: var(--secondary-color);
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1.25rem;
 }
 
 /* Dark mode styles */
-.dark-mode.discover-page {
+.dark-mode.expanded-view {
   background-color: var(--background-dark);
   color: var(--text-dark);
 }
@@ -244,17 +202,18 @@
   opacity: 0.9;
 }
 
-.dark-mode .error-container h2 {
-  color: var(--text-dark);
-}
-
-.dark-mode .error-container p {
+.dark-mode .end-message {
   color: var(--text-dark);
 }
 
 /* Media Queries */
 @media (max-width: 768px) {
-  .media-list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  .expanded-view {
+    padding: 1rem;
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 
   .media-item .media-poster img {
@@ -268,69 +227,80 @@
   .media-item:hover .media-overlay {
     height: 120px;
   }
-}
 
+  .expanded-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 
-/* src/components/Discover.css */
-.streaming-services {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.streaming-service-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 25px;
-  background-color: var(--secondary-color);
-  color: var(--text-dark);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.streaming-service-button.active {
-  background-color: var(--primary-color);
-  transform: scale(1.05);
-}
-
-/* Add this to your homepage.css/Discover.css */
-
-.view-more-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 25px;
-  background-color: var(--secondary-color);
-  color: var(--text-dark);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block; /* Makes it a block element */
-  margin: 1rem auto; /* Centers the button horizontally */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.view-more-button:hover {
-  background-color: var(--primary-color);
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Dark mode styles */
-.dark-mode .view-more-button {
-  background-color: var(--primary-color);
-  color: var(--text-dark);
-}
-
-.dark-mode .view-more-button:hover {
-  background-color: var(--secondary-color);
-}
-
-/* Media Queries */
-@media (max-width: 768px) {
-  .view-more-button {
-    padding: 0.5rem 1.25rem;
-    font-size: 0.9rem;
+  .back-button {
+    align-self: flex-start;
   }
 }
+
+/* Add this to your ExpandedView.css file */
+
+.expanded-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .filter-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 25px;
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .filter-button:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+  }
+  
+  .filter-button.active {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+  }
+  
+  /* Dark mode styles */
+  .dark-mode .filter-button {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+  }
+  
+  .dark-mode .filter-button:hover,
+  .dark-mode .filter-button.active {
+    background-color: var(--secondary-color);
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .expanded-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .filter-buttons {
+      justify-content: flex-start;
+    }
+  
+    .filter-button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  }

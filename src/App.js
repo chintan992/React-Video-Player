@@ -7,6 +7,7 @@ import Support from './components/Support';
 import Search from './components/Search';
 import WatchPage from './components/WatchPage';
 import Discover from './components/Discover';
+import ExpandedView from './components/ExpandedView';
 import { DarkModeProvider, useDarkMode } from './components/DarkModeContext';
 import './App.css';
 
@@ -23,6 +24,7 @@ function AppContent() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/support" element={<Support />} />
         <Route path="/watch/:mediaType/:id" element={<WatchPage />} />
+        <Route path="/expanded-view" element={<ExpandedView />} />
       </Routes>
     </div>
   );
