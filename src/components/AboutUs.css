@@ -1,46 +1,54 @@
 /* src/components/AboutUs.css */
+
+/* Main container styling */
 .about-us-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
+  max-width: 800px;          /* Limit the maximum width of the container */
+  margin: 0 auto;            /* Center the container horizontally */
+  padding: 20px;             /* Add space around the content */
+  font-family: Arial, sans-serif;  /* Set the font family */
+  line-height: 1.6;          /* Set line spacing for better readability */
+}
+
+/* Main heading (h1) styling */
+.about-us-container h1 {
+  color: #333;               /* Dark grey color for the heading */
+  text-align: center;        /* Center-align the heading text */
+  margin-bottom: 30px;       /* Add space below the heading */
+}
+
+/* Individual section styling */
+.about-section {
+  margin-bottom: 30px;       /* Add space between sections */
+}
+
+/* Section heading (h2) styling */
+.about-section h2 {
+  color: #4CAF50;           /* Green color for section headings */
+  margin-bottom: 15px;      /* Add space below section headings */
+}
+
+/* Paragraph styling within sections */
+.about-section p {
+  margin-bottom: 15px;      /* Add space below paragraphs */
+}
+
+/* Unordered list styling */
+.about-section ul {
+  list-style-type: disc;    /* Use bullet points for list items */
+  margin-left: 20px;        /* Add indentation for the list */
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {   /* Apply these styles when screen width is 768px or less */
+  .about-us-container {
+      padding: 15px;        /* Reduce padding on mobile */
   }
   
   .about-us-container h1 {
-    color: #333;
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  .about-section {
-    margin-bottom: 30px;
+      font-size: 24px;      /* Smaller heading size on mobile */
   }
   
   .about-section h2 {
-    color: #4CAF50;
-    margin-bottom: 15px;
+      font-size: 20px;      /* Smaller section heading size on mobile */
   }
-  
-  .about-section p {
-    margin-bottom: 15px;
-  }
-  
-  .about-section ul {
-    list-style-type: disc;
-    margin-left: 20px;
-  }
-  
-  @media (max-width: 768px) {
-    .about-us-container {
-      padding: 15px;
-    }
-    
-    .about-us-container h1 {
-      font-size: 24px;
-    }
-    
-    .about-section h2 {
-      font-size: 20px;
-    }
-  }
+}
