@@ -31,10 +31,6 @@ const Navbar = () => {
           {isDarkMode ? '🕶' : '🕶️'}
         </button>
         <button className="search-button" onClick={handleSearchClick}>🔍</button>
-        <div className="auth-button-container">
-          <Link to="/login" className="auth-button">Login</Link>
-          <Link to="/signup" className="auth-button">Sign Up</Link>
-        </div>
         <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span></span>
           <span></span>
