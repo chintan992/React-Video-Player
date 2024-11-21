@@ -1,6 +1,4 @@
 /* src/components/Navbar.css */
-
-/* src/components/Navbar.css */
 @import '../styles/colors.css';
 
 .navbar {
@@ -68,78 +66,10 @@
   transform: rotate(360deg);
 }
 
-/* ... (keep the rest of the styles, updating colors as needed) ... */
-
-
-
-.navbar {
-  background-color: #f8f9fa;
-  padding: 1rem;
-  transition: all 0.3s ease;
-}
-
-.navbar.dark-mode {
-  background-color: #333;
-  color: #fff;
-}
-
-.navbar-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-decoration: none;
-  color: inherit;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: inherit;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-.nav-links a:hover, .nav-links a.active {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.dark-mode .nav-links a:hover, .dark-mode .nav-links a.active {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode-toggle {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-}
-
-.dark-mode-toggle:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.dark-mode .dark-mode-toggle:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
 .hamburger {
-  display: none;
-  flex-direction: column; justify-content: space-between;
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  justify-content: space-between;
   height: 20px;
   cursor: pointer;
 }
@@ -157,9 +87,10 @@
 }
 
 .menu-open .nav-links {
-  display: block;
+  display: flex; /* Show links in a column */
+  flex-direction: column; /* Stack links vertically */
   position: absolute;
-  top: 50px;
+  top: 60px; /* Adjusted to fit below the navbar */
   left: 0;
   width: 100%;
   background-color: #f8f9fa;
@@ -169,119 +100,41 @@
 }
 
 .menu-open .nav-links a {
-  display: block;
+  display: block; /* Make each link a block element */
   padding: 1rem;
   border-bottom: 1px solid #ddd;
 }
 
 .menu-open .nav-links a:last-child {
-  border-bottom: none;
-}
-
-.menu-open .hamburger span {
-  background-color: #333;
-}
-
-.menu-open .dark-mode .hamburger span {
-  background-color: #fff;
+  border-bottom: none; /* Remove bottom border from last link */
 }
 
 @media (max-width: 768px) {
   .nav-links {
-    display: none;
+    display: none; /* Hide links by default */
   }
   .hamburger {
-    display: flex;
+    display: flex; /* Show hamburger icon on mobile */
   }
   .menu-open .nav-links {
-    display: block;
+    display: flex; /* Show links when menu is open */
   }
 }
 
-
-/* src/components/Navbar.css */
-/* ... (keep the previous styles) ... */
-
-.menu-open .nav-links {
-  display: block;
-  position: absolute;
-  top: 50px;
-  left: 0;
-  width: 100%;
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-bottom: 1px solid #ddd;
-  z-index: 1;
-}
-
+/* Additional styles for dark mode */
 .dark-mode .menu-open .nav-links {
   background-color: #222; /* Dark background for the menu in dark mode */
-  border-bottom: 1px solid #444;
 }
 
 .menu-open .nav-links a {
-  display: block;
-  padding: 1rem;
-  border-bottom: 1px solid #ddd;
-  color: #333; /* Ensure text color is visible in light mode */
+  color: #333; /* Text color for light mode */
 }
 
 .dark-mode .menu-open .nav-links a {
-  border-bottom: 1px solid #444;
-  color: #fff; /* Ensure text color is visible in dark mode */
+  color: #fff; /* Text color for dark mode */
 }
 
-.menu-open .nav-links a:last-child {
-  border-bottom: none;
-}
-
-.menu-open .hamburger span {
-  background-color: #333;
-}
-
-.menu-open.dark-mode .hamburger span {
-  background-color: #fff;
-}
-
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
-  }
-  .menu-open .nav-links {
-    display: block;
-  }
-  .dark-mode .nav-links a:hover, 
-  .dark-mode .nav-links a.active {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff; /* Ensure text remains visible when active/hovered in dark mode */
-  }
-}
-
-/* src/components/Navbar.css */
-.auth-button-container {
-  display: flex;
-  align-items: center;
-  margin-left: 1rem;
-}
-
-.auth-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-right: 0.5rem;
-}
-
-.auth-button:hover {
-  background-color: var(--primary-color-dark);
-}
-
-.auth-button:last-child {
-  margin-right: 0;
+.menu-open .nav-links a:hover,
+.menu-open .nav-links a.active {
+  background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
 }

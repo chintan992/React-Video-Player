@@ -1,139 +1,51 @@
 /* src/components/MediaForm.css */
-@import '../styles/colors.css';
-
-.form-container {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
-}
-
-.form-section {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.form-section:hover {
-  transform: translateY(-5px);
-}
-
-h2 {
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-  font-size: 2rem;
-  text-align: center;
-}
-
-.error-message {
-  color: var(--accent-color);
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.season-select {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color, #cccccc);
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: var(--form-background, #ffffff);
-  color: var(--text-color, #333333);
-  cursor: pointer;
-}
-
-.episode-buttons {
+.custom-radio {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.episode-button {
-  padding: 0.5rem;
-  border: 1px solid var(--border-color, #cccccc);
-  border-radius: 4px;
-  background-color: var(--form-background, #ffffff);
-  color: var(--text-color, #333333);
-  font-size: 0.9rem;
+  align-items: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  margin: 0.5rem; /* Add margin for spacing between radio buttons */
 }
 
-.episode-button:hover,
-.episode-button.active {
-  background-color: var(--primary-color, #3498db);
-  color: #ffffff;
-  border-color: var(--primary-color, #3498db);
+.custom-radio input[type="radio"] {
+  display: none; /* Hide the default radio button */
 }
 
-/* Dark mode adjustments */
-.dark-mode .form-section {
-  background-color: var(--secondary-color);
-}
-
-.dark-mode h2 {
-  color: var(--text-dark);
-}
-
-.dark-mode .season-select {
-  background-color: var(--input-background-dark, #34495e);
-  color: var(--text-color-dark, #ecf0f1);
-  border-color: var(--border-color-dark, #7f8c8d);
-}
-
-.dark-mode .episode-button {
-  background-color: var(--input-background-dark, #34495e);
-  color: var(--text-color-dark, #ecf0f1);
-  border-color: var(--border-color-dark, #7f8c8d);
-}
-
-.dark-mode .episode-button:hover,
-.dark-mode .episode-button.active {
-  background-color: var(--primary-color, #3498db);
-  color: #ffffff;
-  border-color: var(--primary-color, #3498db);
-}
-
-
-/* Add this to your MediaForm.css file */
-
-.submit-button {
-  background-color: var(--primary-color, #3498db);
-  color: white;
-  border: none;
+.custom-radio span {
+  padding: 8px 16px; /* Adjust padding for a better fit */
+  border: 2px solid #007bff;
   border-radius: 20px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  outline: none;
-  display: block;
-  margin: 20px auto 0;
+  background-color: white;
+  color: #007bff;
+  transition: background-color 0.3s, color 0.3s;
+  font-size: 0.9rem; /* Adjust font size for better readability */
 }
 
-.submit-button:hover {
-  background-color: var(--primary-color-dark, #2980b9);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
+.custom-radio input[type="radio"]:checked + span {
+  background-color: #007bff;
+  color: white;
 }
 
-.submit-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-radio {
+    flex: 1; /* Allow radio buttons to grow and fit in a row */
+    margin: 0.25rem; /* Reduce margin for tighter spacing */
+  }
+
+  .custom-radio span {
+    padding: 6px 12px; /* Reduce padding for mobile */
+    font-size: 0.8rem; /* Smaller font size for mobile */
+  }
 }
 
-/* Dark mode styles */
-.dark-mode .submit-button {
-  background-color: var(--primary-color-dark, #2980b9);
-  color: var(--text-color-dark, #ecf0f1);
-}
-
-.dark-mode .submit-button:hover {
-  background-color: var(--primary-color, #3498db);
+/* src/components/MediaForm.css */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }

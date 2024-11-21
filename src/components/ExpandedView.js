@@ -1,10 +1,10 @@
+
 // src/components/ExpandedView.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useDarkMode } from '../components/DarkModeContext';
 import MediaItem from './MediaItem';
-import './ExpandedView.css';
 
 const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -126,26 +126,26 @@ function ExpandedView() {
 
   if (error) {
     return (
-      <div className={`expanded-view ${isDarkMode ? 'dark-mode' : ''}`}>
-        <div className="error-message">
-          <h2>Error</h2>
+      <div className={`expanded-view ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen p-4`}>
+        <div className="error-message text-center">
+          <h2 className="text-2xl font-bold">Error</h2>
           <p>{error}</p>
-          <button onClick={() => fetchData(1)}>Retry</button>
+          <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={() => fetchData(1)}>Retry</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`expanded-view ${isDarkMode ? 'dark-mode' : ''}`}>
-      <div className="expanded-header">
-        <button className="back-button" onClick={() => navigate(-1)}>
+    <div className={`expanded-view ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen p-4`}>
+      <div className="expanded-header mb-4">
+        <button className="back-button bg-gray-300 text-black px-4 py-2 rounded" onClick={() => navigate(-1)}>
           ← Back
         </button>
-        <h1>{title}</h1>
-        <div className="filter-buttons">
+        <h1 className="text-3xl font-bold">{title}</h1>
+        <div className="filter-buttons flex space-x-2 mt-2">
           <button
-            className={`filter-button ${selectedGenre === 'all' ? 'active' : ''}`}
+            className={`filter-button ${selectedGenre === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'} px-4 py-2 rounded`}
             onClick={() => handleGenreChange('all')}
           >
             All Genres
@@ -153,7 +153,7 @@ function ExpandedView() {
           {genres.map((genre) => (
             <button
               key={genre.id}
-              className={`filter-button ${selectedGenre === genre.id ? 'active' : ''}`}
+              className={`filter-button ${selectedGenre === genre.id ? 'bg-blue-500 text-white' : 'bg-gray-200'} px-4 py-2 rounded`}
               onClick={() => handleGenreChange(genre.id)}
             >
               {genre.name}
@@ -166,14 +166,14 @@ function ExpandedView() {
         dataLength={filteredItems.length}
         next={() => fetchData(page)}
         hasMore={hasMore}
-        loader={<div className="loading-spinner"></div>}
+        loader={<div className="loading-spinner animate-spin h-10 w-10 border-4 border-blue-500 rounded-full"></div>}
         endMessage={
-          <p className="end-message">
+          <p className="end-message text-center mt-4">
             You've reached the end!
           </p>
         }
       >
-        <div className="media-grid">
+        <div className="media-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredItems.map((item) => (
             <MediaItem
               key={item.id}

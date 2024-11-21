@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import MediaForm from './MediaForm';
 import VideoSection from './VideoSection';
-import './WatchPage.css';
 
 const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -122,52 +121,56 @@ function WatchPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsVideoReady(true);
-  };
+ };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className={`watch-page ${isDarkMode ? 'dark-mode' : ''}`}>
+      <div className={`flex items-center justify-center min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
         <div className="loading-spinner">Loading...</div>
       </div>
     );
   }
 
-  // Error state
+  
+// Error state
   if (error) {
     return (
-      <div className={`watch-page ${isDarkMode ? 'dark-mode' : ''}`}>
-        <div className="error-message">
-          <h2>Error</h2>
+      <div className={`flex items-center justify-center min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+        <div className="error-message text-center">
+          <h2 className="text-2xl font-bold">Error</h2>
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Try Again</button>
+          <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Try Again</button>
         </div>
       </div>
     );
   }
 
-  // No data state
+  
+// No data state
   if (!item) {
     return (
-      <div className={`watch-page ${isDarkMode ? 'dark-mode' : ''}`}>
-        <div className="error-message">
-          <h2>No Data Found</h2>
+      <div className={`flex items-center justify-center min-h-screen ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+        <div className="error-message text-center">
+          <h2 className="text-2xl font-bold">No Data Found</h2>
           <p>Unable to find the requested content.</p>
-          <button onClick={() => navigate(-1)}>Go Back</button>
+          <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Go Back</button>
         </div>
       </div>
     );
   }
 
+  
+// Main content
   return (
-    <div className={`watch-page ${isDarkMode ? 'dark-mode' : ''}`}>
-      <button onClick={() => navigate(-1)} className="back-button">
+    <div className={`p-5 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+      <button onClick={() => navigate(-1)} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
         ← Back to Search
       </button>
       
-      <div className="media-details">
-        <h1>{item.title || item.name}</h1>
-        <div className="media-info">
+      <div className="media-details mb-5">
+        <h1 className="text-3xl font-bold">{item.title || item.name}</h1>
+        <div className="media-info mt-2">
           <p><strong>Type:</strong> {mediaType === 'movie' ? 'Movie' : 'TV Show'}</p>
           <p><strong>Rating:</strong> {item.vote_average.toFixed(1)}/10</p>
           <p><strong>Release Date:</strong> {item.release_date || item.first_air_date || 'N/A'}</p>
@@ -188,7 +191,7 @@ function WatchPage() {
           handleSubmit={handleSubmit}
         />
         {isVideoReady && (
-          <div className="video-wrapper">
+          <div className="video-wrapper mt-5">
             <VideoSection mediaData={mediaData} />
           </div>
         )}

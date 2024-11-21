@@ -1,13 +1,16 @@
 // src/components/MediaItem.js
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import './MediaItem.css';
+import { useDarkMode } from './DarkModeContext'; // Import the dark mode context
 
 const MediaItem = forwardRef(({ item, onClick, onKeyDown }, ref) => {
+  const { isDarkMode } = useDarkMode(); // Get the dark mode state
+
   return (
     <div 
       ref={ref}
-      className="media-item" 
+      className={`rounded-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer 
+                  ${isDarkMode ? 'bg-gray-800 text-white shadow-md hover:shadow-lg' : 'bg-white text-gray-800 shadow-md hover:shadow-lg'}`} 
       onClick={onClick}
       onKeyDown={onKeyDown}
       tabIndex="0"
@@ -19,13 +22,13 @@ const MediaItem = forwardRef(({ item, onClick, onKeyDown }, ref) => {
           ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
           : 'https://via.placeholder.com/500x750?text=No+Image'}
         alt={item.title || item.name}
-        className="media-poster"
+        className="w-full h-64 object-cover"
       />
-      <div className="media-info">
-        <h3>{item.title || item.name}</h3>
-        <p className="media-type">{item.media_type === 'movie' ? 'Movie' : 'TV Show'}</p>
-        <p className="media-rating">Rating: {item.vote_average.toFixed(1)}</p>
-        <p className="media-year">{(item.release_date || item.first_air_date || '').split('-')[0]}</p>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold">{item.title || item.name}</h3>
+        <p className="text-sm">{item.media_type === 'movie' ? 'Movie' : 'TV Show'}</p>
+        <p className="text-sm font-medium">Rating: {item.vote_average.toFixed(1)}</p>
+        <p className="text-sm">{(item.release_date || item.first_air_date || '').split('-')[0]}</p>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
+import './Discover.css'; // Ensure to import the CSS file
 
 const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -119,7 +120,7 @@ function Discover() {
 
   const renderMediaItem = (item, mediaType) => (
     <Link 
-      to={`/watch/${mediaType}/${item.id}`} 
+      to={`/watch/${mediaType }/${item.id}`} 
       key={item.id} 
       className={`media-item ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-lg shadow-md overflow-hidden`}
       data-rating={item.vote_average}
@@ -201,7 +202,7 @@ function Discover() {
           ))}
         </div>
       </header>
-
+  
       {(activeCategory === 'all' || activeCategory === 'movies') && (
         <>
           <section className="media-section mb-6">
@@ -236,7 +237,7 @@ function Discover() {
           )}
         </>
       )}
-
+  
       {(activeCategory === 'all' || activeCategory === 'tv') && (
         <>
           <section className="media-section mb-6">
@@ -273,6 +274,5 @@ function Discover() {
       )}
     </div>
   );
-}
-
-export default Discover;
+  
+  export default Discover;

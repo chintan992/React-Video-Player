@@ -1,6 +1,6 @@
 // src/components/MediaForm.js
 import React, { useState, useEffect } from 'react';
-import './MediaForm.css';
+import './MediaForm.css'; // Import the CSS file for custom styles
 
 const API_KEY = '297f1b91919bae59d50ed815f8d2e14c'; // Replace with your actual TMDB API key
 
@@ -52,96 +52,100 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
   }, [mediaData.type, mediaData.seriesId, mediaData.season, setMediaData]);
 
   return (
-    <form onSubmit={handleSubmit} className="media-form">
-      <div className="form-group">
-        <label className="form-label">Type</label>
-        <div className="toggle-switch">
-          <input 
-            type="radio" 
-            id="series" 
-            name="type" 
-            value="series" 
-            checked={mediaData.type === 'series'} 
-            onChange={handleInputChange}
-          />
-          <label htmlFor="series">Series</label>
-          <input 
-            type="radio" 
-            id="movie" 
-            name="type" 
-            value="movie" 
-            checked={mediaData.type === 'movie'} 
-            onChange={handleInputChange}
-          />
-          <label htmlFor="movie">Movie</label>
+    <form onSubmit={handleSubmit} className={`space-y-4 ${mediaData.isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} p-4 rounded-lg`}>
+      <div className="form-group sr-only">
+        {/* Hidden label for accessibility */}
+        <label className="sr-only">Type</label>
+        <div className="flex space-x-4">
+          <label className="custom-radio">
+            <input 
+              type="radio" 
+              id="series" 
+              name="type" 
+              value="series" 
+              checked={mediaData.type === 'series'} 
+              onChange={handleInputChange}
+              className="sr-only" // Hide the input visually
+            />
+            <span>Series</span>
+          </label>
+          <label className="custom-radio">
+            <input 
+              type="radio" 
+              id="movie" 
+              name="type" 
+              value="movie" 
+              checked={mediaData.type === 'movie'} 
+              onChange={handleInputChange}
+              className="sr-only" // Hide the input visually
+            />
+            <span>Movie</span>
+          </label>
         </div>
       </div>
 
       <div className="form-group">
-  <label className="form-label">API</label>
-  <div className="toggle-switch api-toggle">
-    <input 
-      type="radio" 
-      id="multiembed" 
-      name="apiType" 
-      value="multiembed" 
-      checked={mediaData.apiType === 'multiembed'} 
-      onChange={handleInputChange}
-    />
-    <label htmlFor="multiembed">Multiembed</label>
-    <input 
-      type="radio" 
-      id="autoembed" 
-      name="apiType" 
-      value="autoembed" 
-      checked={mediaData.apiType === 'autoembed'} 
-      onChange={handleInputChange}
-    />
-    <label htmlFor="autoembed">Autoembed</label>
-    <input 
-      type="radio" 
-      id="2embed" 
-      name="apiType" 
-      value="2embed" 
-      checked={mediaData.apiType === '2embed'} 
-      onChange={handleInputChange}
-    />
-    <label htmlFor="2embed">2embed</label>
-  </div>
-</div>
+        <label className="block text-lg font-medium">API</label>
+        <div className="flex flex-wrap space-x-4">
+          {['multiembed', 'autoembed', '2embed', 'newMultiembed', 'vidsrc', 'newAutoembed'].map(api => (
+            <label key={api} className="custom-radio">
+              <input 
+                type="radio" 
+                id={api} 
+                name="apiType" 
+                value={api} 
+                checked={mediaData.apiType === api} 
+                onChange={handleInputChange}
+              />
+              <span>{api}</span>
+            </label>
+          ))}
+        </div>
+      </div>
 
+      {/* Additional form fields for series and episodes */}
       {mediaData.type === 'series' && (
-        <div className="form-row">
-          <div className="form-group half-width">
-            <select
-              name="season"
-              value={mediaData.season}
+        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+          <div className="form-group flex-1">
+            <label htmlFor="season" className="block text-lg font-medium">Season</label>
+            <select 
+              id="season" 
+              name="season" 
+              value={mediaData.season} 
               onChange={handleInputChange}
-              className="season-select"
+              className="border rounded p-2 w-full" // Ensure full width
             >
-              {seasons.map((season, index) => (
-                <option key={index} value={season.season_number}>
-                  Season {season.season_number}
+              {seasons.map(season => (
+                <option key={season.season_number} value={season.season_number}>
+                  {season.name}
                 </option>
               ))}
             </select>
           </div>
-          <div className="form-group half-width episode-buttons">
-            {episodes.map((episode, index) => (
-              <button
-                key={index}
-                type="button"
-                className={`episode-button ${mediaData.episodeNo === episode.episode_number.toString() ? 'active' : ''}`}
-                onClick={() => setMediaData(prevData => ({ ...prevData, episodeNo: episode.episode_number.toString() }))}
-              >
-                {episode.episode_number}
-              </button>
-            ))}
+
+          <div className="form-group flex-1">
+            <label htmlFor="episodeNo" className="block text-lg font-medium">Episode</label>
+            <select 
+              id="episodeNo" 
+              name="episodeNo" 
+              value={mediaData.episodeNo} 
+              onChange={handleInputChange}
+              className="border rounded p-2 w-full" // Ensure full width
+            >
+              {episodes.map(episode => (
+                <option key={episode.episode_number} value={episode.episode_number}>
+                  {episode.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}
 
-      <button type="submit" className="submit-button">Stream Now</button>
+
+      <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+        Submit
+      </button>
     </form>
   );
 });

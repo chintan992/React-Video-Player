@@ -1,11 +1,10 @@
 // src/components/Search.js
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkMode } from './DarkModeContext';
 import MediaDetail from './MediaDetail';
 import MediaItem from './MediaItem';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { searchMedia, getMediaDetails } from '../api/tmdbApi';
-import './Search.css';
 
 function Search() {
   const [query, setQuery] = useState('');
@@ -15,8 +14,9 @@ function Search() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const { isDarkMode } = useDarkMode();
+  
+  const inputRef = useRef(null);
 
-  // Fetch data function
   const fetchData = useCallback(async (searchQuery, pageNum) => {
     if (!searchQuery.trim()) return;
 
@@ -27,7 +27,6 @@ function Search() {
       const newResults = await searchMedia(searchQuery, pageNum);
       setResults(prevResults => {
         if (pageNum === 1) return newResults;
-        // Filter out duplicates based on id
         const existingIds = new Set(prevResults.map(item => item.id));
         const uniqueNewResults = newResults.filter(item => !existingIds.has(item.id));
         return [...prevResults, ...uniqueNewResults];
@@ -40,7 +39,6 @@ function Search() {
     }
   }, []);
 
-  // Handle search input changes with debounce
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (query.trim()) {
@@ -53,7 +51,6 @@ function Search() {
     return () => clearTimeout(delayDebounceFn);
   }, [query, fetchData]);
 
-  // Handle infinite scroll
   const loadMore = useCallback(() => {
     if (!isLoading && query.trim()) {
       fetchData(query, page + 1);
@@ -63,7 +60,6 @@ function Search() {
 
   const { lastElementRef } = useInfiniteScroll(loadMore);
 
-  // Handle item selection
   const handleItemClick = async (item) => {
     try {
       const detailData = await getMediaDetails(item.media_type, item.id);
@@ -74,7 +70,6 @@ function Search() {
     }
   };
 
-  // Handle keyboard navigation
   const handleKeyDown = (e, item) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -82,55 +77,54 @@ function Search() {
     }
   };
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   return (
-    <div className={`search-container ${isDarkMode ? 'dark-mode' : ''}`}>
-      <div className="search-form">
+    <div className={`flex flex-col items-center p-8 transition-all ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <div className="w-full max-w-md mb-4">
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for movies and TV shows..."
-          className="search-input"
+          className={`w-full p-2 border border-gray-300 rounded-md 
+                      ${isDarkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-black placeholder-gray-400'}`}
           aria-label="Search for movies and TV shows"
         />
       </div>
 
       {error && (
-        <div className="error-message" role="alert">
+        <div className="mb-4 text-red-500" role="alert">
           {error}
         </div>
       )}
 
-      <div className="results-container">
-        {results.map((item, index) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+        {results.map(( item, index) => (
           <MediaItem
             key={`${item.id}-${index}`}
             item={item}
             onClick={() => handleItemClick(item)}
             onKeyDown={(e) => handleKeyDown(e, item)}
             ref={index === results.length - 1 ? lastElementRef : null}
+            className={`transition-transform transform hover:scale-105 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-4`}
           />
         ))}
       </div>
 
-      {isLoading && (
-        <div className="loading-indicator">
-          <div className="spinner"></div>
-          <span>Loading...</span>
-        </div>
-      )}
+      {isLoading && <div className="mt-4">Loading...</div>}
 
-      {!isLoading && query && results.length === 0 && (
-        <div className="no-results">
-          No results found for "{query}"
-        </div>
+      {results.length === 0 && !isLoading && (
+        <div className="mt-4 text-gray-500">No results found. Please try a different search.</div>
       )}
 
       {selectedItem && (
-        <MediaDetail
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
+        <MediaDetail item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import './HomePage.css';
 import VideoSection from './VideoSection';
 import MediaForm from './MediaForm';
 import { getIframeSrc } from '../api';
+import './index.css';
 
 const HomePage = React.memo(() => {
   const [mediaData, setMediaData] = useState({
