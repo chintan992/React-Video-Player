@@ -35,7 +35,7 @@ const Support = () => {
         <p>If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement and is accessible on this site, please contact the third-party content providers directly. Let's Stream is not responsible for the removal of any allegedly infringing content.</p>
         <p>Let's Stream respects the intellectual property of others. If you believe that your work has been copied in a way that constitutes copyright infringement, please follow the procedures set forth in the Digital Millennium Copyright Act (DMCA) and contact the hosting providers of the content directly.</p>
         <p>By using Let's Stream, you acknowledge and agree that you are solely responsible for your use of the service and any content you access through it.</p>
-        <iframe src="https://www.2embed.skin/embedtvfull/60735" className="w-full h-64 border-0" scrolling="no" allowFullScreen></iframe>
+        
       </section>
     </div>
   );
