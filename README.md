@@ -12,3 +12,42 @@ The <mark style="background-color: #FFFF00">Let's Stream</mark> Website project 
 6. **Mobile app:** Develop a mobile app for the Let’s Stream Website project. This will allow users to access the website on their mobile devices and watch movies and series on the go.
 7. **Live streaming:** Add support for live streaming of events such as movie premieres, award shows, and more. This will help to attract more users to the website and increase engagement.
 8. **Subscription model:** Implement a subscription model that allows users to access premium content such as exclusive movies and series. This will help to generate revenue for the website and provide users with more options.
+
+
+## Useful Files 
+```
+/React-Video-Player
+│
+├── /src
+│   ├── /api
+│   │   └── tmdbApi.js
+│   ├── /components
+│   │   ├── AboutUs.js
+│   │   ├── DarkModeContext.js
+│   │   ├── Discover.js
+│   │   ├── ExpandedView.js
+│   │   ├── HomePage.js
+│   │   ├── MediaDetail.js
+│   │   ├── MediaForm.js
+│   │   ├── MediaItem.js
+│   │   ├── Navbar.js
+│   │   ├── Search.js
+│   │   ├── Signup.js
+│   │   ├── Support.js
+│   │   ├── VideoSection.js
+│   │   └── WatchPage.js
+│   ├── /hooks
+│   │   └── useInfiniteScroll.js
+│   ├── App.js
+│   ├── index.js
+│   ├── reportWebVitals.js
+│   └── tailwind.config.js
+│
+├── /public
+│   └── index.html
+│
+├── api_list.txt
+├── package.json
+├── package-lock.json
+└── .gitignore
+```
