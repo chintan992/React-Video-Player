@@ -1,3 +1,0 @@
-name = "serverless-handler"
-main = "src/index.ts"
-compatibility_date = "2024-11-21"
