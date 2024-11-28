@@ -1,4 +1,3 @@
-// src/components/Search.js
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkMode } from './DarkModeContext';
 import MediaDetail from './MediaDetail';
@@ -101,6 +100,7 @@ function Search() {
       {error && (
         <div className="mb-4 text-red-500" role="alert">
           {error}
+          <button onClick={() => fetchData(query, page)} className="ml-2 text-blue-500 underline">Retry</button>
         </div>
       )}
 
