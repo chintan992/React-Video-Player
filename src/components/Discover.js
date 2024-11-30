@@ -1,10 +1,11 @@
 // src/components/Discover.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDarkMode } from './DarkModeContext';
+import { useNavigate } from 'react-router-dom';
+import MediaItem from './MediaItem';
+/* import LoadingSkeleton from './LoadingSkeleton'; */
 
-const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
+const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
 
 const streamingServices = [
   { id: 8, name: 'Netflix' },
@@ -28,7 +29,35 @@ function Discover() {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeStreamingService, setActiveStreamingService] = useState(null);
-  const { isDarkMode } = useDarkMode();
+
+  const getCachedData = (key) => {
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return null;
+      
+      const { data, timestamp } = JSON.parse(item);
+      // Cache expires after 5 minutes
+      if (Date.now() - timestamp > 5 * 60 * 1000) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return data;
+    } catch (error) {
+      console.error('Error reading from cache:', error);
+      return null;
+    }
+  };
+
+  const setCachedData = (key, data) => {
+    try {
+      localStorage.setItem(key, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error writing to cache:', error);
+    }
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -40,20 +69,27 @@ function Discover() {
         trendingTVShows: `${BASE_URL}/trending/tv/week?api_key=${API_KEY}`
       };
 
-      const responses = await Promise.all(
-        Object.values(endpoints).map(url => fetch(url))
+      const newCategories = {};
+      
+      await Promise.all(
+        Object.entries(endpoints).map(async ([key, url]) => {
+          // Try to get cached data first
+          const cachedData = getCachedData(key);
+          if (cachedData) {
+            newCategories[key] = cachedData;
+            return;
+          }
+
+          // If no cache, fetch from API
+          const response = await fetch(url);
+          const data = await response.json();
+          const results = data.results.slice(0, 10);
+          newCategories[key] = results;
+          setCachedData(key, results);
+        })
       );
 
-      const data = await Promise.all(
-        responses.map(res => res.json())
-      );
-
-      setCategories({
-        latestMovies: data[0].results.slice(0, 10),
-        trendingMovies: data[1].results.slice(0, 10),
-        latestTVShows: data[2].results.slice(0, 10),
-        trendingTVShows: data[3].results.slice(0, 10)
-      });
+      setCategories(newCategories);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('An error occurred while fetching data. Please try again.');
@@ -62,13 +98,17 @@ function Discover() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const filterByStreamingService = async (serviceId) => {
     setIsLoading(true);
     try {
+      const cacheKey = `streaming_${serviceId}`;
+      const cachedData = getCachedData(cacheKey);
+      
+      if (cachedData) {
+        setCategories(cachedData);
+        return;
+      }
+
       const moviesEndpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
       const tvShowsEndpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
 
@@ -82,12 +122,15 @@ function Discover() {
         tvShowsResponse.json()
       ]);
 
-      setCategories({
+      const newCategories = {
         latestMovies: moviesData.results.slice(0, 10),
         trendingMovies: [],
         latestTVShows: tvShowsData.results.slice(0, 10),
         trendingTVShows: []
-      });
+      };
+
+      setCachedData(cacheKey, newCategories);
+      setCategories(newCategories);
     } catch (error) {
       console.error('Error fetching streaming service data:', error);
       setError('An error occurred while fetching streaming service data. Please try again.');
@@ -95,6 +138,13 @@ function Discover() {
       setIsLoading(false);
     }
   };
+
+  // Memoize fetchData to prevent unnecessary re-renders
+  const memoizedFetchData = React.useCallback(fetchData, []);
+
+  useEffect(() => {
+    memoizedFetchData();
+  }, [memoizedFetchData]);
 
   const handleStreamingServiceClick = (serviceId) => {
     if (activeStreamingService === serviceId) {
@@ -109,168 +159,210 @@ function Discover() {
   const handleViewMore = (type, category, title) => {
     navigate('/expanded-view', { 
       state: { 
-        type, // 'movie' or 'tv'
-        category, // 'latest' or 'trending'
+        type,
+        category,
         title,
         streamingService: activeStreamingService 
       } 
     });
   };
 
-  const renderMediaItem = (item, mediaType) => (
-    <Link 
-      to={`/watch/${mediaType}/${item.id}`} 
-      key={item.id} 
-      className={`media-item ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-lg shadow-md overflow-hidden`}
-      data-rating={item.vote_average}
-    >
-      <div className="media-poster">
-        <img
-          src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-          alt={item.title || item.name}
-          loading="lazy"
-          className="rounded-lg"
-        />
-        <div className="media-overlay">
-          <div className="media-rating bg-black bg-opacity-50 rounded-full p-1">{item.vote_average.toFixed(1)}</div>
-          <div className="media-date bg-black bg-opacity-50 rounded-full p-1">
-            {new Date(item.release_date || item.first_air_date).getFullYear()}
-          </div>
-        </div>
-      </div>
-      <div className="media-info p-2">
-        <h3 className="text-lg font-semibold">{item.title || item.name}</h3>
-        <p className="media-overview text-gray-600">{item.overview ? `${item.overview.slice(0, 100)}...` : 'No overview available'}</p>
-      </div>
-    </Link>
-  );
-
   if (isLoading) {
     return (
-      <div className={`discover-page ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen flex items-center justify-center`}>
-        <div className="loading-spinner animate-spin h-10 w-10 border-4 border-blue-500 rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-gray-900">
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`discover-page ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} min-h-screen flex items-center justify-center`}>
-        <div className="error-container text-center">
-          <h2 className="text-2xl font-bold">Oops!</h2>
-          <p>{error}</p>
-          <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={() => window.location.reload()}>Try Again</button>
+      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+        <div className="text-center px-4">
+          <h2 className="text-2xl font-bold mb-4">Oops!</h2>
+          <p className="mb-6 text-gray-600 dark:text-gray-300">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
+              transition-colors duration-200 focus:outline-none focus:ring-2 
+              focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
+  const gridClasses = "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6";
+
   return (
-    <div className={`discover-page ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} p-4`}>
-      <header className="discover-header mb-4">
-        <h1 className="text-3xl font-bold">Discover</h1>
-        <nav className="category-nav flex flex-wrap space-x-2 mb-4">
-          <button 
-            className={`px-4 py-2 rounded ${activeCategory === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`} 
-            onClick={() => setActiveCategory('all')}
-          >
-            All
-          </button>
-          <button 
-            className={`px-4 py-2 rounded ${activeCategory === 'movies' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`} 
-            onClick={() => setActiveCategory('movies')}
-          >
-            Movies
-          </button>
-          <button 
-            className={`px-4 py-2 rounded ${activeCategory === 'tv' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`} 
-            onClick={() => setActiveCategory('tv')}
-          >
-            TV Shows
-          </button>
-        </nav>
-        <div className="streaming-services flex flex-wrap space-x-2">
-          {streamingServices.map(service => (
-            <button
-              key={service.id}
-              className={`px-4 py-2 rounded ${activeStreamingService === service.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              onClick={() => handleStreamingServiceClick(service.id)}
-            >
-              {service.name}
-            </button>
-          ))}
+    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <header className="mb-8 space-y-6">
+          <h1 className="text-3xl font-bold">Discover</h1>
+          
+          {/* Category Navigation */}
+          <nav className="flex flex-wrap gap-2">
+            {['all', 'movies', 'tv'].map((category) => (
+              <button 
+                key={category}
+                className={`px-4 py-2 rounded-lg transition-all duration-200 
+                  ${activeCategory === category 
+                    ? 'bg-primary-500 text-white shadow-lg' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                onClick={() => setActiveCategory(category)}
+              >
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </button>
+            ))}
+          </nav>
+
+          {/* Streaming Services */}
+          <div className="flex flex-wrap gap-2">
+            {streamingServices.map(service => (
+              <button
+                key={service.id}
+                className={`px-4 py-2 rounded-lg transition-all duration-200 
+                  ${activeStreamingService === service.id 
+                    ? 'bg-primary-500 text-white shadow-lg' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                onClick={() => handleStreamingServiceClick(service.id)}
+              >
+                {service.name}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        {/* Content Sections */}
+        <div className="space-y-12">
+          {/* Movies Sections */}
+          {(activeCategory === 'all' || activeCategory === 'movies') && (
+            <>
+              {/* Latest Movies */}
+              <section className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-semibold">Latest Movies</h2>
+                  <button 
+                    className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
+                      hover:bg-primary-600 transition-colors duration-200"
+                    onClick={() => handleViewMore('movie', 'latest', 'Latest Movies')}
+                  >
+                    View More
+                  </button>
+                </div>
+                <div className={gridClasses}>
+                  {categories.latestMovies.map(movie => (
+                    <MediaItem
+                      key={movie.id}
+                      item={{...movie, media_type: 'movie'}}
+                      onClick={() => navigate(`/watch/movie/${movie.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') navigate(`/watch/movie/${movie.id}`);
+                      }}
+                      loading={isLoading}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              {/* Trending Movies */}
+              {categories.trendingMovies.length > 0 && (
+                <section className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-semibold">Trending Movies</h2>
+                    <button 
+                      className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
+                        hover:bg-primary-600 transition-colors duration-200"
+                      onClick={() => handleViewMore('movie', 'trending', 'Trending Movies')}
+                    >
+                      View More
+                    </button>
+                  </div>
+                  <div className={gridClasses}>
+                  {categories.trendingMovies.map(movie => (
+                      <MediaItem
+                        key={movie.id}
+                        item={{...movie, media_type: 'movie'}}
+                        onClick={() => navigate(`/watch/movie/${movie.id}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') navigate(`/watch/movie/${movie.id}`);
+                        }}
+                        loading={isLoading}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+
+          {/* TV Shows Sections */}
+          {(activeCategory === 'all' || activeCategory === 'tv') && (
+            <>
+              {/* Latest TV Shows */}
+              <section className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-semibold">Latest TV Shows</h2>
+                  <button 
+                    className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
+                      hover:bg-primary-600 transition-colors duration-200"
+                    onClick={() => handleViewMore('tv', 'latest', 'Latest TV Shows')}
+                  >
+                    View More
+                  </button>
+                </div>
+                <div className={gridClasses}>
+                  {categories.latestTVShows.map(tvShow => (
+                    <MediaItem
+                      key={tvShow.id}
+                      item={{...tvShow, media_type: 'tv'}}
+                      onClick={() => navigate(`/watch/tv/${tvShow.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') navigate(`/watch/tv/${tvShow.id}`);
+                      }}
+                      loading={isLoading}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              {/* Trending TV Shows */}
+              {categories.trendingTVShows.length > 0 && (
+                <section className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-semibold">Trending TV Shows</h2>
+                    <button 
+                      className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
+                        hover:bg-primary-600 transition-colors duration-200"
+                      onClick={() => handleViewMore('tv', 'trending', 'Trending TV Shows')}
+                    >
+                      View More
+                    </button>
+                  </div>
+                  <div className={gridClasses}>
+                    {categories.trendingTVShows.map(tvShow => (
+                      <MediaItem
+                        key={tvShow.id}
+                        item={{...tvShow, media_type: 'tv'}}
+                        onClick={() => navigate(`/watch/tv/${tvShow.id}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') navigate(`/watch/tv/${tvShow.id}`);
+                        }}
+                        loading={isLoading}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
         </div>
-      </header>
-
-      {(activeCategory === 'all' || activeCategory === 'movies') && (
-        <>
-          <section className="media-section mb-6">
-            <div className="section-header flex justify-between items-center mb-2">
-              <h2 className="text-2xl font-semibold">Latest Movies</h2>
-              <button 
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={() => handleViewMore('movie', 'latest', 'Latest Movies')}
-              >
-                View More
-              </button>
-            </div>
-            <div className="media-list grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {categories.latestMovies.map(movie => renderMediaItem(movie, 'movie'))}
-            </div>
-          </section>
-          {categories.trendingMovies.length > 0 && (
-            <section className="media-section mb-6">
-              <div className="section-header flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-semibold">Trending Movies</h2>
-                <button 
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                  onClick={() => handleViewMore('movie', 'trending', 'Trending Movies')}
-                >
-                  View More
-                </button>
-              </div>
-              <div className="media-list grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {categories.trendingMovies.map(movie => renderMediaItem(movie, 'movie'))}
-              </div>
-            </section>
-          )}
-        </>
-      )}
-
-      {(activeCategory === 'all' || activeCategory === 'tv') && (
-        <>
-          <section className="media-section mb-6">
-            <div className="section-header flex justify-between items-center mb-2">
-              <h2 className="text-2xl font-semibold">Latest TV Shows</h2>
-              <button 
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={() => handleViewMore('tv', 'latest', 'Latest TV Shows')}
-              >
-                View More
-              </button>
-            </div>
-            <div className="media-list grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {categories.latestTVShows.map(tvShow => renderMediaItem(tvShow, 'tv'))}
-            </div>
-          </section>
-          {categories.trendingTVShows.length > 0 && (
-            <section className="media-section mb-6">
-              <div className="section-header flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-semibold">Trending TV Shows</h2>
-                <button 
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                  onClick={() => handleViewMore('tv', 'trending', 'Trending TV Shows')}
-                >
-                  View More
-                </button>
-              </div>
-              <div className="media-list grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {categories.trendingTVShows.map(tvShow => renderMediaItem(tvShow, 'tv'))}
-              </div>
-            </section>
-          )}
-        </>
-      )}
+      </div>
     </div>
   );
 }

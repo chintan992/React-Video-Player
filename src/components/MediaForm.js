@@ -1,8 +1,7 @@
 // src/components/MediaForm.js
 import React, { useState, useEffect } from 'react';
-import './MediaForm.css'; // Import the CSS file for custom styles
 
-const API_KEY = '297f1b91919bae59d50ed815f8d2e14c'; // Replace with your actual TMDB API key
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 
 const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
   const [seasons, setSeasons] = useState([]);
@@ -52,12 +51,12 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
   }, [mediaData.type, mediaData.seriesId, mediaData.season, setMediaData]);
 
   return (
-    <form onSubmit={handleSubmit} className={`space-y-4 ${mediaData.isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} p-4 rounded-lg`}>
-      <div className="form-group sr-only">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg">
+      <div className="sr-only">
         {/* Hidden label for accessibility */}
         <label className="sr-only">Type</label>
         <div className="flex space-x-4">
-          <label className="custom-radio">
+          <label className="inline-flex items-center cursor-pointer">
             <input 
               type="radio" 
               id="series" 
@@ -69,7 +68,7 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
             />
             <span>Series</span>
           </label>
-          <label className="custom-radio">
+          <label className="inline-flex items-center cursor-pointer">
             <input 
               type="radio" 
               id="movie" 
@@ -84,11 +83,11 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
         </div>
       </div>
 
-      <div className="form-group">
+      <div className="mb-4">
         <label className="block text-lg font-medium">API</label>
         <div className="flex flex-wrap space-x-4">
           {['multiembed', 'autoembed', '2embed', 'newMultiembed', 'vidsrc', 'newAutoembed'].map(api => (
-            <label key={api} className="custom-radio">
+            <label key={api} className="inline-flex items-center cursor-pointer mr-4">
               <input 
                 type="radio" 
                 id={api} 
@@ -106,7 +105,7 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
       {/* Additional form fields for series and episodes */}
       {mediaData.type === 'series' && (
         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-          <div className="form-group flex-1">
+          <div className="flex-1">
             <label htmlFor="season" className="block text-lg font-medium">Season</label>
             <select 
               id="season" 
@@ -123,7 +122,7 @@ const MediaForm = React.memo(({ mediaData, setMediaData, handleSubmit }) => {
             </select>
           </div>
 
-          <div className="form-group flex-1">
+          <div className="flex-1">
             <label htmlFor="episodeNo" className="block text-lg font-medium">Episode</label>
             <select 
               id="episodeNo" 

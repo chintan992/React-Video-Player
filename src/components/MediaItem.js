@@ -1,7 +1,8 @@
-// src/components/MediaItem.js
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDarkMode } from './DarkModeContext'; // Import the dark mode context
+
+const IMAGE_BASE_URL = process.env.REACT_APP_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p';
 
 const MediaItem = forwardRef(({ item, onClick, onKeyDown }, ref) => {
   const { isDarkMode } = useDarkMode(); // Get the dark mode state
@@ -19,7 +20,7 @@ const MediaItem = forwardRef(({ item, onClick, onKeyDown }, ref) => {
     >
       <img
         src={item.poster_path 
-          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+          ? `${IMAGE_BASE_URL}/w500${item.poster_path}`
           : 'https://via.placeholder.com/500x750?text=No+Image'}
         alt={item.title || item.name}
         className="w-full h-64 object-cover"

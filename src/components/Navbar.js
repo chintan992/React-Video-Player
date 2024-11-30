@@ -1,10 +1,12 @@
-// src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDarkMode } from '../components/DarkModeContext';
+import { useDarkMode } from './DarkModeContext';
+import { logout } from '../firebase/auth';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const { currentUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,23 +19,250 @@ const Navbar = () => {
     navigate('/search');
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   return (
-    <nav className={`flex items-center justify-between p-4 shadow-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-      <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
-        <Link to="/" className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-blue-600'}`}>LetsStream</Link>
-        <div className={`flex space-x-4 ${isMenuOpen ? 'block' : 'hidden'} md:flex`}>
-          <Link to="/" className={`text-gray-700 hover:text-blue-600 ${location.pathname === '/' ? 'font-semibold' : ''}`}>Discover</Link>
-          <Link to="/about" className={`text-gray-700 hover:text-blue-600 ${location.pathname === '/about' ? 'font-semibold' : ''}`}>About Us</Link>
-          <Link to="/support" className={`text-gray-700 hover:text-blue-600 ${location.pathname === '/support' ? 'font-semibold' : ''}`}>Support</Link>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ${
+      isDarkMode ? 'bg-dark-bg border-dark-border' : 'bg-white border-gray-200'
+    } border-b`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className={`text-2xl font-bold transition-colors duration-200 ${
+              isDarkMode ? 'text-white hover:text-primary-400' : 'text-primary-600 hover:text-primary-700'
+            }`}
+          >
+            LetsStream
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            <Link 
+              to="/" 
+              className={`transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/' ? 'font-semibold' : ''}`}
+            >
+              Discover
+            </Link>
+            <Link 
+              to="/about" 
+              className={`transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/about' ? 'font-semibold' : ''}`}
+            >
+              About Us
+            </Link>
+            <Link 
+              to="/support" 
+              className={`transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/support' ? 'font-semibold' : ''}`}
+            >
+              Support
+            </Link>
+          </div>
+
+          {/* Right side buttons */}
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-full transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
+                  : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+              }`}
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDarkMode ? '🌙' : '☀️'}
+            </button>
+            
+            <button 
+              onClick={handleSearchClick}
+              className={`p-2 rounded-full transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
+                  : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+              }`}
+              aria-label="Search"
+            >
+              🔍
+            </button>
+
+            {/* Authentication Links */}
+            {currentUser ? (
+              <div className="flex items-center space-x-4">
+                <Link 
+                  to="/profile"
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Profile
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link 
+                  to="/login"
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/signup"
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 rounded-lg transition-colors duration-200 focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              <div className="relative w-6 h-5">
+                <span 
+                  className={`absolute w-6 h-0.5 transform transition-all duration-300 ${
+                    isDarkMode ? 'bg-white' : 'bg-gray-800'
+                  } ${isMenuOpen ? 'rotate-45 top-2' : 'top-0'}`}
+                />
+                <span 
+                  className={`absolute w-6 h-0.5 top-2 ${
+                    isDarkMode ? 'bg-white' : 'bg-gray-800'
+                  } ${isMenuOpen ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+                />
+                <span 
+                  className={`absolute w-6 h-0.5 transform transition-all duration-300 ${
+                    isDarkMode ? 'bg-white' : 'bg-gray-800'
+                  } ${isMenuOpen ? '-rotate-45 top-2' : 'top-4'}`}
+                />
+              </div>
+            </button>
+          </div>
         </div>
-        <button className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-800'}`} onClick={toggleDarkMode}>
-          {isDarkMode ? '🌙' : '☀️'} {/* Changed icons for better representation */}
-        </button>
-        <button className={`text-xl ml-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} onClick={handleSearchClick}>🔍</button>
-        <div className="md:hidden cursor-pointer" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <div className={`h-1 w-6 ${isDarkMode ? 'bg-white' : 'bg-gray-800'} mb-1 ${isMenuOpen ? 'rotate-45' : ''}`}></div>
-          <div className={`h-1 w-6 ${isDarkMode ? 'bg-white' : 'bg-gray-800'} mb-1 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></div>
-          <div className={`h-1 w-6 ${isDarkMode ? 'bg-white' : 'bg-gray-800'} ${isMenuOpen ? '-rotate-45' : ''}`}></div>
+
+        {/* Mobile menu */}
+        <div 
+          className={`md:hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen 
+              ? 'max-h-96 opacity-100' 
+              : 'max-h-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="py-3 space-y-4">
+            <Link 
+              to="/" 
+              className={`block transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/' ? 'font-semibold' : ''}`}
+            >
+              Discover
+            </Link>
+            <Link 
+              to="/about" 
+              className={`block transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/about' ? 'font-semibold' : ''}`}
+            >
+              About Us
+            </Link>
+            <Link 
+              to="/support" 
+              className={`block transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white' 
+                  : 'text-gray-700 hover:text-primary-600'
+              } ${location.pathname === '/support' ? 'font-semibold' : ''}`}
+            >
+              Support
+            </Link>
+            {currentUser ? (
+              <>
+                <Link 
+                  to="/profile"
+                  className={`block transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Profile
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className={`block w-full text-left transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/login"
+                  className={`block transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Login
+                </Link>
+                <Link 
+                  to="/signup"
+                  className={`block transition-colors duration-200 ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-700 hover:text-primary-600'
+                  }`}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

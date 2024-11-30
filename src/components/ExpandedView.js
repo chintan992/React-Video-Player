@@ -6,8 +6,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useDarkMode } from '../components/DarkModeContext';
 import MediaItem from './MediaItem';
 
-const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
+const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
 
 function ExpandedView() {
   const location = useLocation();

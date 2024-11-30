@@ -1,8 +1,8 @@
 // src/api/tmdbApi.js
 
 // API credentials and base URL for The Movie Database (TMDB) API
-const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';  // Your TMDB API key
-const BASE_URL = 'https://api.themoviedb.org/3';      // TMDB API base URL
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;  // Your TMDB API key from environment
+const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL; // TMDB API base URL from environment
 
 /**
  * Search for movies and TV shows using the TMDB API
