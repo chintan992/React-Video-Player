@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import { useUserFeatures } from '../hooks/useUserFeatures';
+import { getRecommendations } from '../api/tmdbApi';
 import MediaForm from './MediaForm';
 import VideoSection from './VideoSection';
 
@@ -51,6 +52,7 @@ function WatchPage() {
   const videoSectionRef = useRef(null);
   const [showUserLists, setShowUserLists] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
 
   // User Features
   const {
@@ -79,7 +81,7 @@ function WatchPage() {
   const isInFavorites = favorites?.some(i => i.id === Number(id));
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchDetailsAndRecommendations = async () => {
       try {
         const response = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
         if (!response.ok) {
@@ -94,16 +96,20 @@ function WatchPage() {
           seriesId: type === 'tv' ? id : '',
           movieId: type === 'movie' ? id : '',
         }));
+
+        // Fetch recommendations
+        const recommendationsData = await getRecommendations(type, id);
+        setRecommendations(recommendationsData);
       } catch (err) {
-        console.error('Error fetching detail data:', err);
-        setError('Failed to load details. Please try again.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load content. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
 
     if (type && id) {
-      fetchDetails();
+      fetchDetailsAndRecommendations();
     }
   }, [id, type]);
 
@@ -180,7 +186,7 @@ function WatchPage() {
     <div className={`fixed right-0 top-0 h-full w-80 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg transform transition-transform duration-300 ease-in-out ${showUserLists ? 'translate-x-0' : 'translate-x-full'} z-50`}>
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">My Lists</h2>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">My Lists</h2>
           <button 
             onClick={() => setShowUserLists(false)}
             className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -192,7 +198,7 @@ function WatchPage() {
         <div className="space-y-6">
           {/* Watchlist */}
           <div>
-            <h3 className="font-semibold mb-2">Watchlist</h3>
+            <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">Watchlist</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {watchlist?.map(item => (
                 <div 
@@ -200,7 +206,7 @@ function WatchPage() {
                   className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer group"
                 >
                   <span 
-                    className="truncate flex-grow pr-2"
+                    className="truncate flex-grow pr-2 text-gray-800 dark:text-gray-200"
                     onClick={() => handleListItemClick(item)}
                   >
                     {item.title || item.name}
@@ -221,7 +227,7 @@ function WatchPage() {
 
           {/* Favorites */}
           <div>
-            <h3 className="font-semibold mb-2">Favorites</h3>
+            <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">Favorites</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {favorites?.map(item => (
                 <div 
@@ -229,7 +235,7 @@ function WatchPage() {
                   className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer group"
                 >
                   <span 
-                    className="truncate flex-grow pr-2"
+                    className="truncate flex-grow pr-2 text-gray-800 dark:text-gray-200"
                     onClick={() => handleListItemClick(item)}
                   >
                     {item.title || item.name}
@@ -250,7 +256,7 @@ function WatchPage() {
 
           {/* Watch History */}
           <div>
-            <h3 className="font-semibold mb-2">Watch History</h3>
+            <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">Watch History</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {watchHistory?.map(item => (
                 <div 
@@ -261,8 +267,8 @@ function WatchPage() {
                     className="flex flex-col flex-grow pr-2"
                     onClick={() => handleListItemClick(item)}
                   >
-                    <span className="truncate">{item.title || item.name}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="truncate text-gray-800 dark:text-gray-200">{item.title || item.name}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
                       {new Date(item.watchedAt.seconds * 1000).toLocaleDateString()}
                     </span>
                   </div>
@@ -314,8 +320,8 @@ function WatchPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
           <div className="p-6">
             <div className="flex flex-col md:flex-row gap-8">
               <div className="w-full md:w-1/3 lg:w-1/4">
@@ -382,12 +388,12 @@ function WatchPage() {
                 {type === 'tv' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold mb-2">Seasons</h3>
-                      <p className="text-3xl font-bold">{item?.number_of_seasons || 'N/A'}</p>
+                      <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Seasons</h3>
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white">{item?.number_of_seasons || 'N/A'}</p>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold mb-2">Episodes</h3>
-                      <p className="text-3xl font-bold">{item?.number_of_episodes || 'N/A'}</p>
+                      <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Episodes</h3>
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white">{item?.number_of_episodes || 'N/A'}</p>
                     </div>
                   </div>
                 )}
@@ -396,7 +402,7 @@ function WatchPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden" ref={videoSectionRef}>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden" ref={videoSectionRef}>
           <div className="p-6">
             <MediaForm
               mediaData={mediaData}
@@ -413,6 +419,55 @@ function WatchPage() {
           </div>
         </div>
       </div>
+
+      {/* Recommendations Section */}
+      {recommendations.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+              </svg>
+              You might also like
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {recommendations.slice(0, 10).map(recommendation => (
+                <div 
+                  key={recommendation.id}
+                  className="cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => {
+                    navigate(`/watch/${recommendation.media_type}/${recommendation.id}`);
+                    window.scrollTo(0, 0);
+                  }}
+                >
+                  <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-lg mb-2 bg-gray-200 dark:bg-gray-700 group">
+                    <img
+                      src={recommendation.poster_path 
+                        ? `${process.env.REACT_APP_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p'}/w200${recommendation.poster_path}`
+                        : 'https://via.placeholder.com/200x300?text=No+Image'}
+                      alt={recommendation.title || recommendation.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 group-hover:opacity-75"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2">
+                      <span className="text-white text-sm font-medium">Click to Watch</span>
+                    </div>
+                  </div>
+                  <h3 className="text-sm font-medium truncate hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-300">
+                    {recommendation.title || recommendation.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {recommendation.release_date?.split('-')[0] || recommendation.first_air_date?.split('-')[0] || 'N/A'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* User Lists Sidebar */}
       {renderUserListsSidebar()}

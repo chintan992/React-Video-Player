@@ -125,3 +125,62 @@ export const getPopularTVShows = async (page = 1) => {
     throw new Error('Failed to fetch popular TV shows. Please try again later.');
   }
 };
+
+/**
+ * Get videos (trailers, teasers, etc.) for a specific movie or TV show
+ * @param {string} mediaType - Whether it's a 'movie' or 'tv' show
+ * @param {number} id - The unique identifier for the media item
+ * @returns {Promise<Array>} - Array of video objects including trailers
+ */
+export const getVideos = async (mediaType, id) => {
+  try {
+    validateConfig();
+    
+    const response = await fetch(
+      `${BASE_URL}/${mediaType}/${id}/videos?api_key=${API_KEY}`
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch videos');
+    }
+    
+    const data = await response.json();
+    // Filter to get only trailers and teasers
+    return data.results.filter(video => 
+      video.site === 'YouTube' && 
+      (video.type === 'Trailer' || video.type === 'Teaser')
+    );
+  } catch (error) {
+    console.error('Error fetching videos:', error);
+    throw new Error('Failed to fetch videos. Please try again later.');
+  }
+};
+
+/**
+ * Get recommendations for a specific movie or TV show
+ * @param {string} mediaType - Whether it's a 'movie' or 'tv' show
+ * @param {number} id - The unique identifier for the media item
+ * @param {number} page - Which page of results to fetch (default: 1)
+ * @returns {Promise<Array>} - Array of recommended media items
+ */
+export const getRecommendations = async (mediaType, id, page = 1) => {
+  try {
+    validateConfig();
+    
+    const response = await fetch(
+      `${BASE_URL}/${mediaType}/${id}/recommendations?api_key=${API_KEY}&page=${page}`
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch recommendations');
+    }
+    
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw new Error('Failed to fetch recommendations. Please try again later.');
+  }
+};
