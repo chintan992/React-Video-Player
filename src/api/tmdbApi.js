@@ -2,7 +2,14 @@
 
 // API credentials and base URL for The Movie Database (TMDB) API
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;  // Your TMDB API key from environment
-const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL; // TMDB API base URL from environment
+const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL || 'https://api.themoviedb.org/3'; // TMDB API base URL from environment
+
+// Validate API configuration
+const validateConfig = () => {
+  if (!API_KEY) {
+    throw new Error('TMDB API key is not configured. Please check your environment variables.');
+  }
+};
 
 /**
  * Search for movies and TV shows using the TMDB API
@@ -12,6 +19,8 @@ const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL; // TMDB API base URL from 
  */
 export const searchMedia = async (query, page = 1) => {
   try {
+    validateConfig();
+    
     // Make API request to search for both movies and TV shows
     const response = await fetch(
       `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
@@ -19,7 +28,8 @@ export const searchMedia = async (query, page = 1) => {
     
     // Check if the request was successful
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch search results');
     }
     
     // Parse the JSON response
@@ -30,7 +40,7 @@ export const searchMedia = async (query, page = 1) => {
   } catch (error) {
     // Log and re-throw any errors that occur
     console.error('Error searching media:', error);
-    throw error;
+    throw new Error('Failed to search media. Please check your API configuration and try again.');
   }
 };
 
@@ -42,20 +52,23 @@ export const searchMedia = async (query, page = 1) => {
  */
 export const getMediaDetails = async (mediaType, id) => {
   try {
+    validateConfig();
+    
     // Make API request to get detailed information about the specific media item
     const response = await fetch(
       `${BASE_URL}/${mediaType}/${id}?api_key=${API_KEY}`
     );
     
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch media details');
     }
     
     // Return the parsed JSON response
     return await response.json();
   } catch (error) {
     console.error('Error fetching media details:', error);
-    throw error;
+    throw new Error('Failed to fetch media details. Please try again later.');
   }
 };
 
@@ -66,20 +79,23 @@ export const getMediaDetails = async (mediaType, id) => {
  */
 export const getPopularMovies = async (page = 1) => {
   try {
+    validateConfig();
+    
     // Make API request to get popular movies
     const response = await fetch(
       `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`
     );
     
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch popular movies');
     }
     
     const data = await response.json();
     return data.results;  // Return just the array of movies
   } catch (error) {
     console.error('Error fetching popular movies:', error);
-    throw error;
+    throw new Error('Failed to fetch popular movies. Please try again later.');
   }
 };
 
@@ -90,19 +106,22 @@ export const getPopularMovies = async (page = 1) => {
  */
 export const getPopularTVShows = async (page = 1) => {
   try {
+    validateConfig();
+    
     // Make API request to get popular TV shows
     const response = await fetch(
       `${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${page}`
     );
     
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      const errorData = await response.json();
+      throw new Error(errorData.status_message || 'Failed to fetch popular TV shows');
     }
     
     const data = await response.json();
     return data.results;  // Return just the array of TV shows
   } catch (error) {
     console.error('Error fetching popular TV shows:', error);
-    throw error;
+    throw new Error('Failed to fetch popular TV shows. Please try again later.');
   }
 };

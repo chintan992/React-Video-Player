@@ -23,7 +23,20 @@ function Search() {
     setError(null);
 
     try {
+      if (!process.env.REACT_APP_TMDB_API_KEY) {
+        throw new Error('API configuration is missing. Please check your settings.');
+      }
+
       const newResults = await searchMedia(searchQuery, pageNum);
+      
+      if (!newResults || newResults.length === 0) {
+        if (pageNum === 1) {
+          setError('No results found. Please try a different search term.');
+          setResults([]);
+          return;
+        }
+      }
+
       setResults(prevResults => {
         if (pageNum === 1) return newResults;
         const existingIds = new Set(prevResults.map(item => item.id));
@@ -31,8 +44,13 @@ function Search() {
         return [...prevResults, ...uniqueNewResults];
       });
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('An error occurred while fetching data. Please try again.');
+      console.error('Error fetching search results:', error);
+      setError(
+        error.message === 'API configuration is missing. Please check your settings.'
+          ? error.message
+          : 'Failed to fetch search results. Please try again later.'
+      );
+      if (pageNum === 1) setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -61,11 +79,23 @@ function Search() {
 
   const handleItemClick = async (item) => {
     try {
+      if (!process.env.REACT_APP_TMDB_API_KEY) {
+        throw new Error('API configuration is missing. Please check your settings.');
+      }
+
+      setIsLoading(true);
       const detailData = await getMediaDetails(item.media_type, item.id);
       setSelectedItem({ ...item, ...detailData });
+      setError(null);
     } catch (error) {
-      console.error('Error fetching detail data:', error);
-      setError('Error loading item details. Please try again.');
+      console.error('Error fetching item details:', error);
+      setError(
+        error.message === 'API configuration is missing. Please check your settings.'
+          ? error.message
+          : 'Failed to load item details. Please try again later.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,9 +128,16 @@ function Search() {
       </div>
 
       {error && (
-        <div className="mb-4 text-red-500" role="alert">
-          {error}
-          <button onClick={() => fetchData(query, page)} className="ml-2 text-blue-500 underline">Retry</button>
+        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-lg" role="alert">
+          <p className="font-medium">{error}</p>
+          {error !== 'No results found. Please try a different search term.' && (
+            <button 
+              onClick={() => fetchData(query, page)} 
+              className="mt-2 px-4 py-2 bg-red-200 dark:bg-red-800 rounded-md hover:bg-red-300 dark:hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          )}
         </div>
       )}
 

@@ -2,6 +2,7 @@ import React, { useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDarkMode } from './components/DarkModeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -100,9 +101,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

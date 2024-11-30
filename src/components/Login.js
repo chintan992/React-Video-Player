@@ -27,7 +27,30 @@ const Login = () => {
       await loginWithEmailAndPassword(formData.email, formData.password);
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Failed to login');
+      console.error('Login error:', err);
+      let errorMessage = 'Failed to login';
+      
+      // Handle specific Firebase error codes
+      switch (err.code) {
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection';
+          break;
+        default:
+          errorMessage = err.message || 'An error occurred during login';
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -41,7 +64,24 @@ const Login = () => {
       await signInWithGoogle();
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Failed to sign in with Google');
+      console.error('Google sign-in error:', err);
+      let errorMessage = 'Failed to sign in with Google';
+      
+      // Handle specific Firebase error codes for Google sign-in
+      switch (err.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Sign-in cancelled. Please try again';
+          break;
+        case 'auth/popup-blocked':
+          errorMessage = 'Pop-up blocked. Please allow pop-ups for this site';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection';
+          break;
+        default:
+          errorMessage = err.message || 'An error occurred during Google sign-in';
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

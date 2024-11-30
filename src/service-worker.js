@@ -9,7 +9,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate } from 'workbox-strategies';
+import { StaleWhileRevalidate, NetworkOnly, NetworkFirst } from 'workbox-strategies';
 
 clientsClaim();
 
@@ -48,19 +48,43 @@ registerRoute(
   createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
 );
 
-// An example runtime caching route for requests that aren't handled by the
-// precache, in this case same-origin .png requests like those from in public/
+// Cache static assets
 registerRoute(
-  // Add in any other file extensions or routing criteria as needed.
-  ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.png'),
-  // Customize this strategy as needed, e.g., by changing to CacheFirst.
+  ({ url }) => url.origin === self.location.origin && 
+    (url.pathname.endsWith('.png') || 
+     url.pathname.endsWith('.jpg') || 
+     url.pathname.endsWith('.jpeg') || 
+     url.pathname.endsWith('.svg') || 
+     url.pathname.endsWith('.css') || 
+     url.pathname.endsWith('.js')),
   new StaleWhileRevalidate({
-    cacheName: 'images',
+    cacheName: 'static-assets',
     plugins: [
-      // Ensure that once this runtime cache reaches a maximum size the
-      // least-recently used images are removed.
       new ExpirationPlugin({ maxEntries: 50 }),
     ],
+  })
+);
+
+// Don't cache Firebase authentication and Firestore requests
+registerRoute(
+  ({ url }) => 
+    url.href.includes('firebaseauth') || 
+    url.href.includes('firestore') || 
+    url.href.includes('identitytoolkit'),
+  new NetworkOnly()
+);
+
+// Cache other requests with network-first strategy
+registerRoute(
+  ({ request }) => request.destination === 'document',
+  new NetworkFirst({
+    cacheName: 'documents',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 24 * 60 * 60 // 24 hours
+      })
+    ]
   })
 );
 

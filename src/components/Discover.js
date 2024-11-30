@@ -62,6 +62,10 @@ function Discover() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      if (!process.env.REACT_APP_TMDB_API_KEY) {
+        throw new Error('TMDB API key is not configured. Please check your environment variables.');
+      }
+
       const endpoints = {
         latestMovies: `${BASE_URL}/movie/now_playing?api_key=${API_KEY}`,
         trendingMovies: `${BASE_URL}/trending/movie/week?api_key=${API_KEY}`,
@@ -73,26 +77,43 @@ function Discover() {
       
       await Promise.all(
         Object.entries(endpoints).map(async ([key, url]) => {
-          // Try to get cached data first
-          const cachedData = getCachedData(key);
-          if (cachedData) {
-            newCategories[key] = cachedData;
-            return;
-          }
+          try {
+            // Try to get cached data first
+            const cachedData = getCachedData(key);
+            if (cachedData) {
+              newCategories[key] = cachedData;
+              return;
+            }
 
-          // If no cache, fetch from API
-          const response = await fetch(url);
-          const data = await response.json();
-          const results = data.results.slice(0, 10);
-          newCategories[key] = results;
-          setCachedData(key, results);
+            // If no cache, fetch from API
+            const response = await fetch(url);
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.status_message || `Failed to fetch ${key}`);
+            }
+            
+            const data = await response.json();
+            const results = data.results.slice(0, 10);
+            newCategories[key] = results;
+            setCachedData(key, results);
+          } catch (err) {
+            console.error(`Error fetching ${key}:`, err);
+            newCategories[key] = []; // Set empty array for failed category
+          }
         })
       );
 
+      // Check if all categories failed
+      const allCategoriesEmpty = Object.values(newCategories).every(arr => arr.length === 0);
+      if (allCategoriesEmpty) {
+        throw new Error('Failed to fetch content. Please check your API configuration and try again.');
+      }
+
       setCategories(newCategories);
+      setError(null); // Clear any previous errors if successful
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('An error occurred while fetching data. Please try again.');
+      setError(error.message || 'An error occurred while fetching data. Please try again.');
     } finally {
       setIsLoading(false);
     }
