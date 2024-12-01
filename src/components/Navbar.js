@@ -103,16 +103,13 @@ const Navbar = () => {
             {/* Authentication Links */}
             {currentUser ? (
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/profile"
-                  className={`p-2 rounded-full transition-colors duration-200 ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Profile
-                </Link>
+<Link to="/profile">
+  <img 
+    src={`https://avatar.iran.liara.run/username?username=${currentUser?.displayName || 'Default'}`} 
+    alt="User Avatar" 
+    className="w-10 h-10 rounded-full"
+  />
+</Link>
                 <button 
                   onClick={handleLogout}
                   className={`p-2 rounded-full transition-colors duration-200 ${

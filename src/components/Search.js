@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useSearch } from '../context/SearchContext';
 import { useDarkMode } from './DarkModeContext';
 import MediaDetail from './MediaDetail';
 import MediaItem from './MediaItem';
@@ -7,14 +8,12 @@ import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { searchMedia, getMediaDetails, advancedSearch } from '../api/tmdbApi';
 
 function Search() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const { query, setQuery, results, setResults, advancedFilters, setAdvancedFilters } = useSearch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState(null);
   const { isDarkMode } = useDarkMode();
   
   const inputRef = useRef(null);
@@ -62,13 +61,12 @@ function Search() {
     } finally {
       setIsLoading(false);
     }
-  }, [advancedFilters]);
+  }, [advancedFilters, setResults]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (query.trim() || advancedFilters) {
         setPage(1);
-        setResults([]);
         fetchData(query, 1);
       }
     }, 500);

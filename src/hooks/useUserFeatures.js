@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as userService from '../firebase/userService';
 
@@ -21,14 +21,12 @@ export const useUserFeatures = (mediaId) => {
       }
 
       try {
-        // First, ensure user document exists
         await userService.initializeUserDocument(
           currentUser.uid,
           currentUser.displayName,
           currentUser.email
         );
 
-        // Then fetch user data
         const [
           watchlistData,
           favoritesData,
@@ -78,57 +76,57 @@ export const useUserFeatures = (mediaId) => {
   }, [mediaId]);
 
   // Watchlist actions
-  const addToWatchlist = async (mediaItem) => {
+  const addToWatchlist = useCallback(async (mediaItem) => {
     if (!currentUser) return;
     try {
       await userService.addToWatchlist(currentUser.uid, mediaItem);
-      setWatchlist([...watchlist, mediaItem]);
+      setWatchlist(prev => [...prev, mediaItem]);
       setError(null);
     } catch (err) {
       console.error('Error adding to watchlist:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
-  const removeFromWatchlist = async (mediaItem) => {
+  const removeFromWatchlist = useCallback(async (mediaItem) => {
     if (!currentUser) return;
     try {
       await userService.removeFromWatchlist(currentUser.uid, mediaItem);
-      setWatchlist(watchlist.filter(item => item.id !== mediaItem.id));
+      setWatchlist(prev => prev.filter(item => item.id !== mediaItem.id));
       setError(null);
     } catch (err) {
       console.error('Error removing from watchlist:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
   // Favorites actions
-  const addToFavorites = async (mediaItem) => {
+  const addToFavorites = useCallback(async (mediaItem) => {
     if (!currentUser) return;
     try {
       await userService.addToFavorites(currentUser.uid, mediaItem);
-      setFavorites([...favorites, mediaItem]);
+      setFavorites(prev => [...prev, mediaItem]);
       setError(null);
     } catch (err) {
       console.error('Error adding to favorites:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
-  const removeFromFavorites = async (mediaItem) => {
+  const removeFromFavorites = useCallback(async (mediaItem) => {
     if (!currentUser) return;
     try {
       await userService.removeFromFavorites(currentUser.uid, mediaItem);
-      setFavorites(favorites.filter(item => item.id !== mediaItem.id));
+      setFavorites(prev => prev.filter(item => item.id !== mediaItem.id));
       setError(null);
     } catch (err) {
       console.error('Error removing from favorites:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
   // Watch History actions
-  const addToWatchHistory = async (mediaItem) => {
+  const addToWatchHistory = useCallback(async (mediaItem) => {
     if (!currentUser) return;
     try {
       const historyItem = { ...mediaItem, watchedAt: new Date() };
@@ -140,13 +138,13 @@ export const useUserFeatures = (mediaId) => {
       console.error('Error adding to watch history:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
-  const removeFromWatchHistory = async (historyItem) => {
+  const removeFromWatchHistory = useCallback(async (historyItem) => {
     if (!currentUser) return;
     try {
       await userService.removeFromWatchHistory(currentUser.uid, historyItem);
-      setWatchHistory(watchHistory.filter(item => 
+      setWatchHistory(prev => prev.filter(item => 
         !(item.id === historyItem.id && 
           item.watchedAt.seconds === historyItem.watchedAt.seconds)
       ));
@@ -155,10 +153,10 @@ export const useUserFeatures = (mediaId) => {
       console.error('Error removing from watch history:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser]);
 
   // Rating and review actions
-  const addRating = async (rating) => {
+  const addRating = useCallback(async (rating) => {
     if (!currentUser || !mediaId) return;
     try {
       await userService.addRating(currentUser.uid, mediaId, rating);
@@ -169,9 +167,9 @@ export const useUserFeatures = (mediaId) => {
       console.error('Error adding rating:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser, mediaId]);
 
-  const addReview = async (review) => {
+  const addReview = useCallback(async (review) => {
     if (!currentUser || !mediaId) return;
     try {
       await userService.addReview(currentUser.uid, mediaId, review);
@@ -182,7 +180,7 @@ export const useUserFeatures = (mediaId) => {
       console.error('Error adding review:', err);
       setError(err.message);
     }
-  };
+  }, [currentUser, mediaId]);
 
   return {
     watchlist,

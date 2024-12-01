@@ -62,6 +62,25 @@ npm run build
 
 Then, open your browser and navigate to `http://localhost:3000` to view the application.
 
+## Deployment
+
+To deploy the application on Netlify, follow these steps:
+
+1. Create a new site from Git in your Netlify dashboard.
+2. Connect your Git repository.
+3. Set the build command to `npm run build` and the publish directory to `build/`.
+4. Click on "Deploy site".
+
+## Production Build
+
+To create a production build, run:
+
+```bash
+npm run build
+```
+
+This command will generate an optimized build of your application in the `build/` directory, ready for deployment.
+
 ## Project Structure
 
 ```

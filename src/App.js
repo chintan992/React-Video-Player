@@ -2,6 +2,7 @@ import React, { useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDarkMode } from './components/DarkModeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SearchProvider } from './context/SearchContext'; // Import SearchProvider
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
@@ -15,7 +16,7 @@ const AboutUs = React.lazy(() => import('./components/AboutUs'));
 const Support = React.lazy(() => import('./components/Support'));
 const Search = React.lazy(() => import('./components/Search'));
 const WatchPage = React.lazy(() => import('./components/WatchPage'));
-const ExpandedView = React.lazy(() => import('./components/ExpandedView'));
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -83,11 +84,6 @@ function AppContent() {
                   <WatchPage />
                 </ProtectedRoute>
               } />
-              <Route path="/expanded-view" element={
-                <ProtectedRoute>
-                  <ExpandedView />
-                </ProtectedRoute>
-              } />
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <UserFeatures />
@@ -105,7 +101,9 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppContent />
+        <SearchProvider> {/* Wrap AppContent with SearchProvider */}
+          <AppContent />
+        </SearchProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
