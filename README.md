@@ -40,6 +40,12 @@ To set up the project locally, follow these steps:
 3. Set up environment variables:
    Create a `.env` file in the root directory and add your Firebase and TMDB API configurations.
 
+```
+REACT_APP_TMDB_API_KEY=YOUR-API-KEY
+REACT_APP_TMDB_BASE_URL=https://api.themoviedb.org/3
+REACT_APP_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
+```
+
 ## Usage
 
 To run the application in development mode:
