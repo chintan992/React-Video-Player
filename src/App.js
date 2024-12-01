@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import UserFeatures from './components/UserFeatures';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
@@ -57,6 +58,7 @@ function AppContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <main className="min-h-screen pt-16">
+          <ScrollToTop />
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public Routes */}

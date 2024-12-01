@@ -2,8 +2,9 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDarkMode } from './DarkModeContext';
 import MediaDetail from './MediaDetail';
 import MediaItem from './MediaItem';
+import AdvancedSearchForm from './AdvancedSearchForm';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
-import { searchMedia, getMediaDetails } from '../api/tmdbApi';
+import { searchMedia, getMediaDetails, advancedSearch } from '../api/tmdbApi';
 
 function Search() {
   const [query, setQuery] = useState('');
@@ -12,12 +13,14 @@ function Search() {
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
   const { isDarkMode } = useDarkMode();
   
   const inputRef = useRef(null);
 
   const fetchData = useCallback(async (searchQuery, pageNum) => {
-    if (!searchQuery.trim()) return;
+    if ((!searchQuery || !searchQuery.trim()) && !advancedFilters) return;
 
     setIsLoading(true);
     setError(null);
@@ -27,11 +30,16 @@ function Search() {
         throw new Error('API configuration is missing. Please check your settings.');
       }
 
-      const newResults = await searchMedia(searchQuery, pageNum);
+      let newResults;
+      if (advancedFilters) {
+        newResults = await advancedSearch({ ...advancedFilters, query: searchQuery }, pageNum);
+      } else {
+        newResults = await searchMedia(searchQuery, pageNum);
+      }
       
       if (!newResults || newResults.length === 0) {
         if (pageNum === 1) {
-          setError('No results found. Please try a different search term.');
+          setError('No results found. Please try different search criteria.');
           setResults([]);
           return;
         }
@@ -54,11 +62,11 @@ function Search() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [advancedFilters]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (query.trim()) {
+      if (query.trim() || advancedFilters) {
         setPage(1);
         setResults([]);
         fetchData(query, 1);
@@ -66,14 +74,14 @@ function Search() {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, fetchData]);
+  }, [query, advancedFilters, fetchData]);
 
   const loadMore = useCallback(() => {
-    if (!isLoading && query.trim()) {
+    if (!isLoading && (query.trim() || advancedFilters)) {
       fetchData(query, page + 1);
       setPage(prev => prev + 1);
     }
-  }, [query, page, isLoading, fetchData]);
+  }, [query, page, isLoading, fetchData, advancedFilters]);
 
   const { lastElementRef } = useInfiniteScroll(loadMore);
 
@@ -112,19 +120,46 @@ function Search() {
     }
   }, []);
 
+  const handleAdvancedSearch = (filters) => {
+    setAdvancedFilters(filters);
+    setQuery(filters.query || '');
+    setShowAdvanced(false);
+  };
+
   return (
     <div className={`flex flex-col items-center p-8 transition-all ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-      <div className="w-full max-w-md mb-4">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for movies and TV shows..."
-          className={`w-full p-2 border border-gray-300 rounded-md 
+      <div className="w-full max-w-md mb-4 space-y-2">
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search for movies and TV shows..."
+            className={`flex-1 p-2 border border-gray-300 rounded-md 
                       ${isDarkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-black placeholder-gray-400'}`}
-          aria-label="Search for movies and TV shows"
-        />
+            aria-label="Search for movies and TV shows"
+          />
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`px-4 py-2 rounded-md transition-colors
+                      ${isDarkMode 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                        : 'bg-gray-200 hover:bg-gray-300 text-black'}`}
+            aria-label="Toggle advanced search"
+          >
+            {showAdvanced ? 'Basic' : 'Advanced'}
+          </button>
+        </div>
+
+        {showAdvanced && (
+          <div className="mt-4">
+            <AdvancedSearchForm
+              onSearch={handleAdvancedSearch}
+              onClose={() => setShowAdvanced(false)}
+            />
+          </div>
+        )}
       </div>
 
       {error && (
