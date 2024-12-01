@@ -48,7 +48,7 @@ registerRoute(
   createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
 );
 
-// Cache static assets
+// Cache static assets with a Stale While Revalidate strategy
 registerRoute(
   ({ url }) => url.origin === self.location.origin && 
     (url.pathname.endsWith('.png') || 
@@ -58,14 +58,31 @@ registerRoute(
      url.pathname.endsWith('.css') || 
      url.pathname.endsWith('.js')),
   new StaleWhileRevalidate({
-    cacheName: 'static-assets',
+    cacheName: 'static-resources',
     plugins: [
-      new ExpirationPlugin({ maxEntries: 50 }),
+      new ExpirationPlugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
+      }),
     ],
   })
 );
 
-// Don't cache Firebase authentication and Firestore requests
+// Handle API requests with Network First strategy
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-responses',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 30,
+        maxAgeSeconds: 12 * 60 * 60 // 12 hours
+      })
+    ]
+  })
+);
+
+// Don't cache authentication related requests
 registerRoute(
   ({ url }) => 
     url.href.includes('firebaseauth') || 
@@ -74,15 +91,31 @@ registerRoute(
   new NetworkOnly()
 );
 
-// Cache other requests with network-first strategy
+// Cache page navigations with Network First strategy
 registerRoute(
-  ({ request }) => request.destination === 'document',
+  ({ request }) => request.mode === 'navigate',
   new NetworkFirst({
-    cacheName: 'documents',
+    cacheName: 'pages',
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 50,
+        maxEntries: 30,
         maxAgeSeconds: 24 * 60 * 60 // 24 hours
+      })
+    ]
+  })
+);
+
+// Cache media content with Network First strategy
+registerRoute(
+  ({ request }) => 
+    request.destination === 'video' || 
+    request.destination === 'audio',
+  new NetworkFirst({
+    cacheName: 'media-content',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 20,
+        maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
       })
     ]
   })
