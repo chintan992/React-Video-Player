@@ -17,7 +17,6 @@ const Support = React.lazy(() => import('./components/Support'));
 const Search = React.lazy(() => import('./components/Search'));
 const WatchPage = React.lazy(() => import('./components/WatchPage'));
 
-
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -68,12 +67,10 @@ function AppContent() {
               <Route path="/about" element={<AboutUs />} />
               <Route path="/support" element={<Support />} />
 
+              {/* Default Route */}
+              <Route path="/" element={<Discover />} />
+
               {/* Protected Routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Discover />
-                </ProtectedRoute>
-              } />
               <Route path="/search" element={
                 <ProtectedRoute>
                   <Search />
