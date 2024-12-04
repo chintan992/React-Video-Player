@@ -113,30 +113,87 @@ To set up the project locally, follow these steps:
 
 ## Project Structure 
 ```
-/React-Video-Player
-├── /src
-│   ├── /api
-│   │   └── tmdbApi.js          # TMDB API integration
-│   ├── /components
+/workspaces/React-Video-Player/
+├── .devcontainer/
+│   └── devcontainer.json
+├── .env
+├── .firebaserc
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   └── bug_report.md
+│   ├── dependabot.yml
+│   └── workflows/
+│       └── node.js.yml
+├── .gitignore
+├── .netlify/
+│   └── state.json
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── IMPROVEMENTS.md
+├── LICENSE
+├── README.md
+├── api list.txt
+├── netlify.toml
+├─] node_modules/ (ignored)
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public/
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   ├── apple-touch-icon.png
+│   ├── favicon-16x16.png
+│   ├── favicon-32x32.png
+│   ├── favicon.ico
+│   ├── index.html
+│   ├── manifest.json
+│   ├── robots.txt
+│   └── site.webmanifest
+├── src/
+│   ├── App.js
+│   ├── api/
+│   │   └── tmdbApi.js
+│   ├── api.js
+│   ├── components/
 │   │   ├── AboutUs.js
-│   │   ├── DarkModeContext.js  # Dark mode logic
+│   │   ├── AdvancedSearchForm.js
+│   │   ├── DarkModeContext.js
 │   │   ├── Discover.js
+│   │   ├── ErrorBoundary.js
 │   │   ├── HomePage.js
+│   │   ├── LoadingSkeleton.js
+│   │   ├── Login.js
 │   │   ├── MediaDetail.js
 │   │   ├── MediaForm.js
 │   │   ├── MediaItem.js
 │   │   ├── Navbar.js
+│   │   ├── ScrollToTop.js
 │   │   ├── Search.js
-│   │   ├── Login.js            # Firebase Authentication
-│   │   ├── Signup.js           # User Registration
+│   │   ├── Signup.js
+│   │   ├── Support.js
+│   │   ├── UserFeatures.js
+│   │   ├── VideoSection.js
 │   │   └── WatchPage.js
-│   ├── /context
-│   │   └── AuthContext.js      # Authentication Context
-│   ├── /firebase
-│   │   ├── auth.js             # Firebase Auth Configuration
-│   │   └── config.js           # Firebase App Configuration
-│   └── /hooks
-│       └── useInfiniteScroll.js
+│   ├── context/
+│   │   ├── AuthContext.js
+│   │   └── SearchContext.js
+│   ├── firebase/
+│   │   ├── auth.js
+│   │   ├── config.js
+│   │   └── userService.js
+│   ├── hooks/
+│   │   ├── useInfiniteScroll.js
+│   │   └── useUserFeatures.js
+│   ├── index.css
+│   ├── index.js
+│   ├── logo.svg
+│   ├── reportWebVitals.js
+│   ├── service-worker.js
+│   ├── serviceWorkerRegistration.js
+│   ├── setupTests.js
+│   └── styles/
+│       └── colors.css
+└── tailwind.config.js
 
 ```
 
