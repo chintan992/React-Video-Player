@@ -13,6 +13,11 @@ The **Let's Stream Website** is a feature-rich platform designed to use the Stre
 - **PWA Support**: Progressive Web App capabilities enabled by Workbox.
 - **Interactive Carousel**: Seamless browsing with `react-slick`.
 - **Error Handling**: Graceful fallback and error management through error boundaries.
+- **Personalized Profiles**:Allow users to create and customize their profiles with avatars, bios, and preferences. Enable users to save their favorite movies and series for quick access.
+- **Watchlists**: Implement a watchlist feature where users can add movies and series they want to watch later. Provide notifications when new episodes of series in the watchlist are released.
+- **User Reviews and Ratings**: Allow users to rate and review movies and series. Display aggregated ratings and reviews from TMDB and other users.
+- **Social Sharing:** Enable users to share their favorite content on social media platforms. Integrate with social media APIs to allow users to log in with their social accounts.
+- **Trending and Popular Content:** Display trending and popular movies and series based on global or regional data. Use TMDB's trending API to fetch real-time data.
 
 ---
 
