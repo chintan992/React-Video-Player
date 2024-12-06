@@ -131,6 +131,141 @@ export const advancedSearch = async (filters, page = 1) => {
   }
 };
 
+/**
+ * Fetches featured content (trending movies and TV shows) from the TMDB API.
+ * @returns {Promise<Array>} An array of featured content.
+ */
+export const fetchFeaturedContent = async () => {
+  try {
+    validateConfig();
+    const response = await fetch(`${BASE_URL}/trending/all/day?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch featured content');
+    }
+    const data = await response.json();
+    return data.results.slice(0, 5); 
+  } catch (error) {
+    console.error('Error fetching featured content:', error);
+    throw error; 
+  }
+};
+
+/**
+ * Fetches the latest movies from the TMDB API.
+ * @returns {Promise<Array>} An array of latest movies.
+ */
+export const fetchLatestMovies = async () => {
+  try {
+    validateConfig();
+    const response = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch latest movies');
+    }
+    const data = await response.json();
+    return data.results.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching latest movies:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches trending movies from the TMDB API.
+ * @returns {Promise<Array>} An array of trending movies.
+ */
+export const fetchTrendingMovies = async () => {
+  try {
+    validateConfig();
+    const response = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch trending movies');
+    }
+    const data = await response.json();
+    return data.results.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching trending movies:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches the latest TV shows from the TMDB API.
+ * @returns {Promise<Array>} An array of latest TV shows.
+ */
+export const fetchLatestTVShows = async () => {
+  try {
+    validateConfig();
+    const response = await fetch(`${BASE_URL}/tv/on_the_air?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch latest TV shows');
+    }
+    const data = await response.json();
+    return data.results.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching latest TV shows:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches trending TV shows from the TMDB API.
+ * @returns {Promise<Array>} An array of trending TV shows.
+ */
+export const fetchTrendingTVShows = async () => {
+  try {
+    validateConfig();
+    const response = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch trending TV shows');
+    }
+    const data = await response.json();
+    return data.results.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching trending TV shows:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches movies or TV shows filtered by streaming service provider from the TMDB API.
+ * @param {number} serviceId - The ID of the streaming service provider.
+ * @returns {Promise<Object>} An object containing arrays of movies and TV shows.
+ */
+export const filterByStreamingService = async (serviceId) => {
+  try {
+    validateConfig();
+    const moviesEndpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
+    const tvShowsEndpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
+
+    const [moviesResponse, tvShowsResponse] = await Promise.all([
+      fetch(moviesEndpoint),
+      fetch(tvShowsEndpoint)
+    ]);
+
+    if (!moviesResponse.ok) {
+      throw new Error('Failed to fetch movies for streaming service');
+    }
+    if (!tvShowsResponse.ok) {
+      throw new Error('Failed to fetch TV shows for streaming service');
+    }
+
+    const [moviesData, tvShowsData] = await Promise.all([
+      moviesResponse.json(),
+      tvShowsResponse.json()
+    ]);
+
+    return {
+      latestMovies: moviesData.results.slice(0, 10),
+      latestTVShows: tvShowsData.results.slice(0, 10),
+    };
+  } catch (error) {
+    console.error('Error fetching streaming service data:', error);
+    throw error;
+  }
+};
+
+
+
 // Validate API configuration
 const validateConfig = () => {
   if (!API_KEY) {

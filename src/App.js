@@ -1,6 +1,6 @@
 import React, { useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useDarkMode } from './components/DarkModeContext';
+import { DarkModeProvider, useDarkMode } from './components/DarkModeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext'; // Import SearchProvider
 import ErrorBoundary from './components/ErrorBoundary';
@@ -9,6 +9,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import UserFeatures from './components/UserFeatures';
 import ScrollToTop from './components/ScrollToTop';
+
 
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
@@ -44,13 +45,72 @@ const LoadingFallback = () => (
 
 function AppContent() {
   const { isDarkMode } = useDarkMode();
+  
+  useEffect(() => {
+    const requestNotificationPermission = async () => {
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+          // Subscribe to push notifications
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(
+                process.env.REACT_APP_VAPID_PUBLIC_KEY 
+              )
+            });
+            console.log('Push notification subscribed:', subscription);
+            // Send subscription to your server
+          } catch (error) {
+            console.error('Error subscribing to push notifications:', error);
+          }
+        } else {
+          console.log('Notification permission denied.');
+          // Show a message to the user or handle the denial
+        }
+      }
+    };
+
+    const urlBase64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    };
+
+    requestNotificationPermission();
+
+    // Add to home screen prompt
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault(); 
+      // Store the event for later use
+      window.deferredPrompt = event;
+      // Show your custom add-to-home-screen prompt
+      // ... (trigger a button or modal to prompt the user)
+    });
+
+
+    // ... (other effects if needed)
+
+  }, []); 
+
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
-    }
+      document.body.classList.remove('dark');
+    }    
   }, [isDarkMode]);
 
   return (
@@ -96,13 +156,15 @@ function AppContent() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <SearchProvider> {/* Wrap AppContent with SearchProvider */}
-          <AppContent />
-        </SearchProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <DarkModeProvider> 
+      <ErrorBoundary>
+        <AuthProvider>
+          <SearchProvider> {/* Wrap AppContent with SearchProvider */}
+            <AppContent />
+          </SearchProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </DarkModeProvider>
   );
 }
 
