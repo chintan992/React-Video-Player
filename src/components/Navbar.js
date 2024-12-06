@@ -26,10 +26,9 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ${
-      isDarkMode ? 'bg-dark-bg border-dark-border' : 'bg-white border-gray-200'
-    } border-b`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      isDarkMode ? 'bg-dark-bg border-dark-border' : 'bg-white border-gray-200' } border-b`}>
+      <div className="max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 flex-wrap sm:flex-nowrap"> 
           {/* Logo */}
           <Link 
             to="/" 
@@ -41,8 +40,8 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link 
+          <div className="hidden md:flex md:items-center md:space-x-6 lg:space-x-8">
+            <Link
               to="/" 
               className={`transition-colors duration-200 ${
                 isDarkMode 
@@ -75,7 +74,7 @@ const Navbar = () => {
           </div>
 
           {/* Right side buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <button 
               onClick={toggleDarkMode}
               className={`p-2 rounded-full transition-colors duration-200 ${
@@ -102,7 +101,7 @@ const Navbar = () => {
 
             {/* Authentication Links */}
             {currentUser ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3 sm:space-x-4">
 <Link to="/profile">
   <img 
     src={`https://avatar.iran.liara.run/username?username=${currentUser?.displayName || 'Default'}`} 
@@ -133,7 +132,7 @@ const Navbar = () => {
                 >
                   Login
                 </Link>
-                <Link 
+                <Link
                   to="/signup"
                   className={`p-2 rounded-full transition-colors duration-200 ${
                     isDarkMode 
@@ -148,7 +147,7 @@ const Navbar = () => {
 
             {/* Mobile menu button */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsMenuOpen(!isMenuOpen)} 
               className="md:hidden p-2 rounded-lg transition-colors duration-200 focus:outline-none hover:bg-gray-200"
               aria-label="Toggle menu"
             >
@@ -175,7 +174,7 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         <div 
-          className={`md:hidden transition-all duration-300 ease-in-out ${
+          className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
             isMenuOpen 
               ? 'max-h-96 opacity-100' 
               : 'max-h-0 opacity-0 pointer-events-none'
