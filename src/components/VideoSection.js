@@ -151,17 +151,18 @@ const VideoSection = React.memo(({ mediaData }) => {
       <div className="relative w-full h-0 pb-[56.25%]">
         {iframeSrc && (
           <>
-            <iframe
-              ref={iframeRef}
-              src={iframeSrc}
-              className="absolute top-0 left-0 w-full h-full border-0 rounded-lg shadow-lg"
-              allowFullScreen
-              title="Video Player"
-              style={{
-                backgroundColor: '#000',
-                zIndex: 1
-              }}
-            ></iframe>
+<iframe
+  ref={iframeRef}
+  src={iframeSrc}
+  className="absolute top-0 left-0 w-full h-full border-0 rounded-lg shadow-lg"
+  allowFullScreen
+  title="Video Player"
+  style={{
+    backgroundColor: '#000',
+    zIndex: 1
+  }}
+  referrerpolicy="origin"
+></iframe>
             {!isPlaying && (
               <div 
                 className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center cursor-pointer z-10 transition-opacity duration-300 hover:bg-opacity-50"

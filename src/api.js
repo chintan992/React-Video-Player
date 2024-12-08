@@ -40,8 +40,8 @@ const getIframeSrc = (mediaData) => {
         : `https://autoembed.co/movie/tmdb/${movieId}`;
     case 'vidsrc':
       return type === 'series'
-        ? `https://vidsrc.xyz/embed/tv?tmdb=${seriesId}&season=${season}&episodeNo=${episodeNo}${antiPopupParams.vidsrc}`
-        : `https://vidsrc.xyz/embed/movie?tmdb=${movieId}${antiPopupParams.vidsrc}`;
+        ? `https://vidsrc.xyz/embed/tv?tmdb=${seriesId}&season=${season}&episodeNo=${episodeNo}&ds_lang=en`
+        : `https://vidsrc.xyz/embed/movie?tmdb=${movieId}&ds_lang=en`;
     default:
       return '';
   }
