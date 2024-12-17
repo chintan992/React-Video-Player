@@ -18,6 +18,8 @@ The **Let's Stream Website** is a feature-rich platform designed to use the Stre
 - **User Reviews and Ratings**: Allow users to rate and review movies and series. Display aggregated ratings and reviews from TMDB and other users.
 - **Social Sharing:** Enable users to share their favorite content on social media platforms. Integrate with social media APIs to allow users to log in with their social accounts.
 - **Trending and Popular Content:** Display trending and popular movies and series based on global or regional data. Use TMDB's trending API to fetch real-time data.
+- **Search**: Enable users to search for movies, series, and actors. Use TMDB's search API to fetch relevant results.
+- **Dark Mode**: Implement a dark mode feature for users to switch between light and dark themes.
 
 ---
 
@@ -27,6 +29,22 @@ The **Let's Stream Website** is a feature-rich platform designed to use the Stre
 - **Backend/Services**: Firebase Authentication
 - **Progressive Web App**: Workbox
 - **Utilities**: ESLint for code quality
+- **Deployment**: Netlify, Cloudflare Pages
+- **APIs**: TMDB API, Streaming API
+- **Testing**: Jest, React Testing Library
+- **Version Control**: Git
+- **CI/CD**: GitHub Actions
+- **Documentation**: Markdown
+- **Security**: Firebase Security Rules
+- **Accessibility**: WAI-ARIA
+- **Performance**: Lighthouse
+- **Open Source**: MIT License
+- **Contributing**: GitHub
+- **Issues**: GitHub
+- **Pull Requests**: GitHub
+- **Code of Conduct**: Contributing
+- **Contributors**: Contributors
+
 
 ---
 

@@ -185,17 +185,43 @@ export const getMediaReviews = async (mediaId) => {
 
 // Initialize User Document
 export const initializeUserDocument = async (userId, displayName, email) => {
-  const userRef = doc(db, 'users', userId);
-  const docSnap = await getDoc(userRef);
-  
-  if (!docSnap.exists()) {
-    await setDoc(userRef, {
-      displayName,
-      email,
+  try {
+    if (!userId) {
+      console.warn('No userId provided to initializeUserDocument');
+      return;
+    }
+
+    const userRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(userRef);
+    
+    if (!docSnap.exists()) {
+      const userData = {
+        displayName: displayName || 'Anonymous User',
+        email: email || '',
+        watchlist: [],
+        favorites: [],
+        watchHistory: [],
+        createdAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString()
+      };
+
+      await setDoc(userRef, userData);
+      console.log('User document initialized successfully');
+      return userData;
+    }
+
+    return docSnap.data();
+  } catch (error) {
+    console.error('Error initializing user document:', error);
+    // Return a default user object if initialization fails
+    return {
+      displayName: displayName || 'Anonymous User',
+      email: email || '',
       watchlist: [],
       favorites: [],
       watchHistory: [],
-      createdAt: new Date()
-    });
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
+    };
   }
 };
