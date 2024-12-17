@@ -11,8 +11,8 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkOnly } from 'workbox-strategies';
 
-const packageJson = require('../../package.json');
-const APP_VERSION = packageJson.version;
+// Define version directly
+const APP_VERSION = '0.1.0';
 
 // Cache names
 const CACHE_NAME = 'video-player-cache-v1';
@@ -86,13 +86,6 @@ self.addEventListener('fetch', event => {
         });
       })
   );
-});
-
-// Background sync for offline functionality
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-videos') {
-    event.waitUntil(syncVideos());
-  }
 });
 
 // Handle push notifications
