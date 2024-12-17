@@ -1,5 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useInView } from 'react-intersection-observer';
+import { motion, AnimatePresence } from 'framer-motion';
+import debounce from 'lodash.debounce';
+import toast from 'react-hot-toast';
+
+// Components
+import MediaCard from './common/MediaCard';
+import FilterBar from './common/FilterBar';
+import FeaturedContent from './common/FeaturedContent';
+import ScrollToTop from './common/ScrollToTop';
+import { MediaItemSkeleton, FeaturedSkeleton, FiltersSkeleton } from './common/SkeletonLoader';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -31,9 +42,81 @@ function Discover() {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeStreamingService, setActiveStreamingService] = useState(null);
+  
+  // New state variables
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSort, setActiveSort] = useState('popularity.desc');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [watchlist, setWatchlist] = useState(() => {
+    const saved = localStorage.getItem('watchlist');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  // Carousel settings for featured content
-  const featuredSettings = {
+  // Intersection Observer for infinite scroll
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: true
+  });
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      // Implement search functionality
+      console.log('Searching for:', query);
+    }, 500),
+    []
+  );
+
+  // Handle watchlist
+  const handleWatchlistToggle = (item) => {
+    setWatchlist(prev => {
+      const exists = prev.some(i => i.id === item.id);
+      if (exists) {
+        const newWatchlist = prev.filter(i => i.id !== item.id);
+        localStorage.setItem('watchlist', JSON.stringify(newWatchlist));
+        toast.success('Removed from watchlist');
+        return newWatchlist;
+      } else {
+        const newWatchlist = [...prev, item];
+        localStorage.setItem('watchlist', JSON.stringify(newWatchlist));
+        toast.success('Added to watchlist');
+        return newWatchlist;
+      }
+    });
+  };
+
+  // Load watchlist from localStorage on mount
+  useEffect(() => {
+    const savedWatchlist = localStorage.getItem('watchlist');
+    if (savedWatchlist) {
+      try {
+        setWatchlist(JSON.parse(savedWatchlist));
+      } catch (error) {
+        console.error('Error loading watchlist:', error);
+        localStorage.removeItem('watchlist');
+      }
+    }
+  }, []);
+
+  // Handle infinite scroll
+  useEffect(() => {
+    if (inView && hasMore && !isLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [inView, hasMore, isLoading]);
+
+  // Handle search
+  useEffect(() => {
+    if (searchQuery) {
+      debouncedSearch(searchQuery);
+    }
+  }, [searchQuery, debouncedSearch]);
+
+  // Carousel settings
+  const carouselSettings = {
     dots: true,
     infinite: true,
     speed: 500,
@@ -42,51 +125,7 @@ function Discover() {
     autoplay: true,
     autoplaySpeed: 5000,
     arrows: true,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          arrows: false
-        }
-      }
-    ]
-  };
-
-  // Carousel settings for media sections
-  const mediaSettings = {
-    dots: false,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 2,
-    arrows: true,
-    responsive: [
-      {
-        breakpoint: 1280,
-        settings: {
-          slidesToShow: 4,
-        }
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-        }
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-        }
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1
-        }
-      }
-    ]
+    pauseOnHover: true
   };
 
   const getCachedData = (key) => {
@@ -236,6 +275,49 @@ function Discover() {
     }
   };
 
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    setPage(1); // Reset page when changing category
+    
+    // Filter media items based on category
+    let filteredItems = [];
+    switch (category) {
+      case 'movies':
+        filteredItems = [...categories.latestMovies, ...categories.trendingMovies]
+          .filter((item, index, self) => 
+            index === self.findIndex((t) => t.id === item.id)
+          );
+        break;
+      case 'tv':
+        filteredItems = [...categories.latestTVShows, ...categories.trendingTVShows]
+          .filter((item, index, self) => 
+            index === self.findIndex((t) => t.id === item.id)
+          );
+        break;
+      case 'trending':
+        filteredItems = [...categories.trendingMovies, ...categories.trendingTVShows]
+          .filter((item, index, self) => 
+            index === self.findIndex((t) => t.id === item.id)
+          );
+        break;
+      default: // 'all'
+        filteredItems = [
+          ...categories.latestMovies,
+          ...categories.trendingMovies,
+          ...categories.latestTVShows,
+          ...categories.trendingTVShows
+        ].filter((item, index, self) => 
+          index === self.findIndex((t) => t.id === item.id)
+        );
+    }
+
+    setMediaItems(filteredItems);
+  };
+
+  useEffect(() => {
+    handleCategoryChange(activeCategory);
+  }, [categories]); // Re-run when categories data changes
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -292,251 +374,117 @@ function Discover() {
     <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Featured Content Carousel */}
-        {featuredContent.length > 0 && (
+        {featuredContent && featuredContent.length > 0 && (
           <section className="mb-12">
-            <Slider {...featuredSettings} className="featured-carousel">
-              {featuredContent.map(item => (
-                <div key={item.id} className="relative aspect-[16/9]">
-                  <img
-                    src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
-                    alt={item.title || item.name}
-                    className="w-full h-full object-cover rounded-xl"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black to-transparent">
-                    <h2 className="text-3xl font-bold text-white mb-2">
-                      {item.title || item.name}
-                    </h2>
-                    <p className="text-gray-200 line-clamp-2 mb-4">{item.overview}</p>
-                    <button
-                      onClick={() => navigate(`/watch/${item.media_type}/${item.id}`)}
-                      className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
-                        transition-colors duration-200"
-                    >
-                      Watch Now
-                    </button>
-                  </div>
+            <Slider {...carouselSettings}>
+              {featuredContent.map((item, index) => (
+                <div key={item.id}>
+                  <FeaturedContent item={item} />
                 </div>
               ))}
             </Slider>
           </section>
         )}
 
-        {/* Header Section */}
-        <header className="mb-8 space-y-6">
-          <h1 className="text-3xl font-bold">Discover</h1>
-          
-          {/* Category Navigation */}
-          <nav className="flex flex-wrap gap-2">
-            {['all', 'movies', 'tv'].map((category) => (
-              <button 
-                key={category}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 
-                  ${activeCategory === category 
-                    ? 'bg-primary-500 text-white shadow-lg' 
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                onClick={() => setActiveCategory(category)}
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
-          </nav>
-
-          {/* Streaming Services */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            {streamingServices.map(service => (
+        {/* Filters */}
+        <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 mb-8">
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            {/* Category Tabs */}
+            <div className="flex space-x-2">
               <button
-                key={service.id}
-                className={`px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-center
-                  ${activeStreamingService === service.id 
-                    ? `${service.color} text-white shadow-lg` 
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                onClick={() => handleStreamingServiceClick(service.id)}
+                onClick={() => handleCategoryChange('all')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeCategory === 'all'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
               >
-                {service.name}
+                All
               </button>
-            ))}
+              <button
+                onClick={() => handleCategoryChange('movies')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeCategory === 'movies'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Movies
+              </button>
+              <button
+                onClick={() => handleCategoryChange('tv')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeCategory === 'tv'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                TV Shows
+              </button>
+            </div>
+
+            {/* Streaming Services */}
+            <div className="flex flex-wrap gap-2">
+              {streamingServices.map((service) => (
+                <button
+                  key={service.id}
+                  onClick={() => handleStreamingServiceClick(service.id)}
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    activeStreamingService === service.id
+                      ? service.color + ' text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {service.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </header>
+        </div>
 
-        {/* Content Sections */}
-        <div className="space-y-12">
-          {/* Movies Sections */}
-          {(activeCategory === 'all' || activeCategory === 'movies') && (
-            <>
-              {/* Latest Movies */}
-              <section className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-semibold">Latest Movies</h2>
-                  <button 
-                    className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
-                      hover:bg-primary-600 transition-colors duration-200"
-                    onClick={() => handleViewMore('movie', 'latest', 'Latest Movies')}
-                  >
-                    View More
-                  </button>
-                </div>
-                <Slider {...mediaSettings} className="media-carousel">
-                  {categories.latestMovies.map(movie => (
-                    <div key={movie.id} className="px-2">
-                      <MediaItem
-                        item={{...movie, media_type: 'movie'}}
-                        onClick={() => navigate(`/watch/movie/${movie.id}`)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') navigate(`/watch/movie/${movie.id}`);
-                        }}
-                        loading={isLoading}
-                      />
-                    </div>
-                  ))}
-                </Slider>
-              </section>
-
-              {/* Trending Movies */}
-              {categories.trendingMovies.length > 0 && (
-                <section className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-semibold">Trending Movies</h2>
-                    <button 
-                      className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
-                        hover:bg-primary-600 transition-colors duration-200"
-                      onClick={() => handleViewMore('movie', 'trending', 'Trending Movies')}
-                    >
-                      View More
-                    </button>
-                  </div>
-                  <Slider {...mediaSettings} className="media-carousel">
-                    {categories.trendingMovies.map(movie => (
-                      <div key={movie.id} className="px-2">
-                        <MediaItem
-                          item={{...movie, media_type: 'movie'}}
-                          onClick={() => navigate(`/watch/movie/${movie.id}`)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') navigate(`/watch/movie/${movie.id}`);
-                          }}
-                          loading={isLoading}
-                        />
-                      </div>
-                    ))}
-                  </Slider>
-                </section>
-              )}
-            </>
-          )}
-
-          {/* TV Shows Sections */}
-          {(activeCategory === 'all' || activeCategory === 'tv') && (
-            <>
-              {/* Latest TV Shows */}
-              <section className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-semibold">Latest TV Shows</h2>
-                  <button 
-                    className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
-                      hover:bg-primary-600 transition-colors duration-200"
-                    onClick={() => handleViewMore('tv', 'latest', 'Latest TV Shows')}
-                  >
-                    View More
-                  </button>
-                </div>
-                <Slider {...mediaSettings} className="media-carousel">
-                  {categories.latestTVShows.map(tvShow => (
-                    <div key={tvShow.id} className="px-2">
-                      <MediaItem
-                        item={{...tvShow, media_type: 'tv'}}
-                        onClick={() => navigate(`/watch/tv/${tvShow.id}`)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') navigate(`/watch/tv/${tvShow.id}`);
-                        }}
-                        loading={isLoading}
-                      />
-                    </div>
-                  ))}
-                </Slider>
-              </section>
-
-              {/* Trending TV Shows */}
-              {categories.trendingTVShows.length > 0 && (
-                <section className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-semibold">Trending TV Shows</h2>
-                    <button 
-                      className="px-4 py-2 text-sm bg-primary-500 text-white rounded-lg 
-                        hover:bg-primary-600 transition-colors duration-200"
-                      onClick={() => handleViewMore('tv', 'trending', 'Trending TV Shows')}
-                    >
-                      View More
-                    </button>
-                  </div>
-                  <Slider {...mediaSettings} className="media-carousel">
-                    {categories.trendingTVShows.map(tvShow => (
-                      <div key={tvShow.id} className="px-2">
-                        <MediaItem
-                          item={{...tvShow, media_type: 'tv'}}
-                          onClick={() => navigate(`/watch/tv/${tvShow.id}`)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') navigate(`/watch/tv/${tvShow.id}`);
-                          }}
-                          loading={isLoading}
-                        />
-                      </div>
-                    ))}
-                  </Slider>
-                </section>
-              )}
-            </>
+        {/* Media Grid */}
+        <div className="grid gap-3 grid-cols-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, index) => (
+              <MediaItemSkeleton key={`skeleton-${index}`} />
+            ))
+          ) : mediaItems.length > 0 ? (
+            mediaItems.map((item) => (
+              <motion.div
+                key={`${item.id}-${item.media_type}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <MediaCard
+                  item={item}
+                  onWatchlistToggle={() => handleWatchlistToggle(item)}
+                  isInWatchlist={watchlist.some((watchItem) => watchItem.id === item.id)}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">No items found</p>
+            </div>
           )}
         </div>
+
+        {/* Load More / Infinite Scroll Indicator */}
+        {hasMore && !isLoading && (
+          <div
+            ref={loadMoreRef}
+            className="flex justify-center items-center py-8"
+          >
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          </div>
+        )}
+
+        {/* Single ScrollToTop Button */}
+        {showScrollToTop && (
+          <ScrollToTop />
+        )}
       </div>
-
-      {/* Custom CSS for Slick Carousel */}
-      <style jsx="true">{`
-        .featured-carousel .slick-prev,
-        .featured-carousel .slick-next {
-          z-index: 10;
-          width: 40px;
-          height: 40px;
-        }
-        
-        .featured-carousel .slick-prev {
-          left: 20px;
-        }
-        
-        .featured-carousel .slick-next {
-          right: 20px;
-        }
-
-        .featured-carousel .slick-dots {
-          bottom: 20px;
-        }
-
-        .featured-carousel .slick-dots li button:before {
-          color: white;
-        }
-
-        .media-carousel .slick-prev,
-        .media-carousel .slick-next {
-          z-index: 10;
-          width: 30px;
-          height: 30px;
-        }
-
-        .media-carousel .slick-prev {
-          left: -10px;
-        }
-
-        .media-carousel .slick-next {
-          right: -10px;
-        }
-
-        @media (max-width: 640px) {
-          .media-carousel .slick-prev,
-          .media-carousel .slick-next {
-            display: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

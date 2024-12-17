@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DarkModeProvider, useDarkMode } from './components/DarkModeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -9,7 +9,9 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import UserFeatures from './components/UserFeatures';
 import ScrollToTop from './components/ScrollToTop';
-
+import SplashScreen from './components/SplashScreen';
+import useInstallPrompt from './hooks/useInstallPrompt';
+import ShareTargetHandler from './components/ShareTargetHandler';
 
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
@@ -47,65 +49,7 @@ function AppContent() {
   const { isDarkMode } = useDarkMode();
   
   useEffect(() => {
-    const requestNotificationPermission = async () => {
-      if (Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          console.log('Notification permission granted.');
-          // Subscribe to push notifications
-          try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(
-                process.env.REACT_APP_VAPID_PUBLIC_KEY 
-              )
-            });
-            console.log('Push notification subscribed:', subscription);
-            // Send subscription to your server
-          } catch (error) {
-            console.error('Error subscribing to push notifications:', error);
-          }
-        } else {
-          console.log('Notification permission denied.');
-          // Show a message to the user or handle the denial
-        }
-      }
-    };
-
-    const urlBase64ToUint8Array = (base64String) => {
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
-      const base64 = (base64String + padding)
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
-
-      const rawData = window.atob(base64);
-      const outputArray = new Uint8Array(rawData.length);
-
-      for (let i = 0; i < rawData.length; ++i) {
-        outputArray[i] = rawData.charCodeAt(i);
-      }
-      return outputArray;
-    };
-
-    requestNotificationPermission();
-
-    // Add to home screen prompt
-    window.addEventListener('beforeinstallprompt', (event) => {
-      event.preventDefault(); 
-      // Store the event for later use
-      window.deferredPrompt = event;
-      // Show your custom add-to-home-screen prompt
-      // ... (trigger a button or modal to prompt the user)
-    });
-
-
-    // ... (other effects if needed)
-
-  }, []); 
-
-
-  useEffect(() => {
+    // Handle dark mode
     if (isDarkMode) {
       document.body.classList.add('dark');
     } else {
@@ -146,6 +90,7 @@ function AppContent() {
                   <UserFeatures />
                 </ProtectedRoute>
               } />
+              <Route path="/share-target" element={<ShareTargetHandler />} />
             </Routes>
           </Suspense>
         </main>
@@ -155,16 +100,35 @@ function AppContent() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const { isInstallable, handleInstallClick } = useInstallPrompt();
+
   return (
-    <DarkModeProvider> 
-      <ErrorBoundary>
-        <AuthProvider>
-          <SearchProvider> {/* Wrap AppContent with SearchProvider */}
-            <AppContent />
-          </SearchProvider>
-        </AuthProvider>
-      </ErrorBoundary>
-    </DarkModeProvider>
+    <>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      <DarkModeProvider> 
+        <ErrorBoundary>
+          <AuthProvider>
+            <SearchProvider> {/* Wrap AppContent with SearchProvider */}
+              <div className="app">
+                {isInstallable && (
+                  <button 
+                    onClick={handleInstallClick}
+                    className="fixed bottom-4 right-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200 flex items-center space-x-2 z-40"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span>Install App</span>
+                  </button>
+                )}
+                <AppContent />
+              </div>
+            </SearchProvider>
+          </AuthProvider>
+        </ErrorBoundary>
+      </DarkModeProvider>
+    </>
   );
 }
 

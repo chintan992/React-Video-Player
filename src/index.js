@@ -5,6 +5,10 @@ import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import { DarkModeProvider } from './components/DarkModeContext';
+import { addSecurityMetaTags } from './utils/security';
+
+// Add security meta tags
+addSecurityMetaTags();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
