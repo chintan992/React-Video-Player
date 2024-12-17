@@ -23,6 +23,7 @@
     "react-share": "^5.1.1",
     "react-slick": "^0.30.2",
     "slick-carousel": "^1.8.1",
+    "styled-components": "^6.1.13",
     "web-vitals": "^2.1.4",
     "workbox-core": "^7.3.0",
     "workbox-expiration": "^7.3.0",
