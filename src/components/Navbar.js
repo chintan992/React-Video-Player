@@ -124,22 +124,22 @@ const Navbar = () => {
                 {isDarkMode ? <BsMoonStarsFill className="w-5 h-5" /> : <BsSunFill className="w-5 h-5" />}
               </button>
 
-              {/* Notifications */}
-              {currentUser && (
-                <button 
-                  className={`p-2 rounded-full transition-all duration-200 hover:scale-105 relative ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100/50'
-                  }`}
-                  aria-label="Notifications"
-                >
-                  <BsBell className="w-5 h-5" />
-                  {notifications.length > 0 && (
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
-                  )}
-                </button>
-              )}
+             {/* Notifications */}
+            //  {currentUser && (
+            //    <button 
+            //      className={`p-2 rounded-full transition-all duration-200 hover:scale-105 relative ${
+             //       isDarkMode 
+            //          ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+            //          : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100/50'
+           //       }`}
+           //       aria-label="Notifications"
+           //     >
+          //        <BsBell className="w-5 h-5" />
+          //        {notifications.length > 0 && (
+           //         <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+           //       )}
+          //      </button>
+          //    )} 
 
               {/* User Profile */}
               {currentUser ? (

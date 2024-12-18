@@ -36,8 +36,8 @@ const MediaCard = ({ item, onWatchlistToggle, isInWatchlist }) => {
       className="relative aspect-[2/3] rounded-lg overflow-hidden group"
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
+      //onHoverStart={() => setIsHovered(true)}
+      //onHoverEnd={() => setIsHovered(false)}
     >
       <img
         src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
