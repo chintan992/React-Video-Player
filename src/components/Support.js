@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiMail, FiMessageCircle, FiAlertCircle, FiHelpCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiMessageCircle, FiAlertCircle, FiHelpCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useDarkMode } from './DarkModeContext';
 
 const FAQItem = ({ question, answer }) => {

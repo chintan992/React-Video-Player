@@ -102,18 +102,18 @@ function Discover() {
   }, []);
 
   // Handle infinite scroll
-  useEffect(() => {
-    if (inView && hasMore && !isLoading) {
-      setPage(prev => prev + 1);
-    }
-  }, [inView, hasMore, isLoading]);
+  //useEffect(() => {
+    //if (inView && !isLoading) {
+      //setPage(prev => prev + 1);
+    //}
+ // }, [inView, hasMore, isLoading]);
 
   // Handle search
-  useEffect(() => {
-    if (searchQuery) {
-      debouncedSearch(searchQuery);
-    }
-  }, [searchQuery, debouncedSearch]);
+ // useEffect(() => {
+   // if (searchQuery) {
+     // debouncedSearch(searchQuery);
+   // }
+ // }, [searchQuery, debouncedSearch]);
 
   // Carousel settings
   const carouselSettings = {
@@ -277,7 +277,7 @@ function Discover() {
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-    setPage(1); // Reset page when changing category
+  //  setPage(1); // Reset page when changing category
     
     // Filter media items based on category
     let filteredItems = [];
@@ -471,16 +471,16 @@ function Discover() {
         </div>
 
         {/* Load More / Infinite Scroll Indicator */}
-        {hasMore && !isLoading && (
-          <div
-            ref={loadMoreRef}
-            className="flex justify-center items-center py-8"
-          >
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-          </div>
-        )}
+       // {hasMore && !isLoading && (
+       //   <div
+       //     ref={loadMoreRef}
+       //     className="flex justify-center items-center py-8"
+       //   >
+       //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+       //   </div>
+      //  )}
 
-        {/* Single ScrollToTop Button */}
+       
         {showScrollToTop && (
           <ScrollToTop />
         )}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserFeatures } from '../hooks/useUserFeatures';
 import { useAuth } from '../context/AuthContext';
 import { initializeUserDocument } from '../firebase/userService';
-import { useDarkMode } from './DarkModeContext';
+//import { useDarkMode } from './DarkModeContext';
 
 const UserFeatures = () => {
   const navigate = useNavigate();
