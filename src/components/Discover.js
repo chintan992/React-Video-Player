@@ -7,14 +7,12 @@ import toast from 'react-hot-toast';
 
 // Components
 import MediaCard from './common/MediaCard';
-
 import FeaturedContent from './common/FeaturedContent';
 import ScrollToTop from './common/ScrollToTop';
 import { MediaItemSkeleton } from './common/SkeletonLoader';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -42,13 +40,6 @@ function Discover() {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeStreamingService, setActiveStreamingService] = useState(null);
-  
-  // New state variables
-  //const [searchQuery] = useState('');
-  //const [activeSort, setActiveSort] = useState('popularity.desc');
-  //const [page, setPage] = useState(1);
-  //const [hasMore, setHasMore] = useState(true);
-  //const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [mediaItems, setMediaItems] = useState([]);
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('watchlist');
@@ -100,20 +91,6 @@ function Discover() {
       }
     }
   }, []);
-
-  // Handle infinite scroll
-  //useEffect(() => {
-    //if (inView && !isLoading) {
-      //setPage(prev => prev + 1);
-    //}
- // }, [inView, hasMore, isLoading]);
-
-  // Handle search
- // useEffect(() => {
-   // if (searchQuery) {
-     // debouncedSearch(searchQuery);
-   // }
- // }, [searchQuery, debouncedSearch]);
 
   // Carousel settings
   const carouselSettings = {
@@ -277,7 +254,6 @@ function Discover() {
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-  //  setPage(1); // Reset page when changing category
     
     // Filter media items based on category
     let filteredItems = [];
@@ -316,7 +292,7 @@ function Discover() {
 
   useEffect(() => {
     handleCategoryChange(activeCategory);
-  }, [categories]); // Re-run when categories data changes
+  }, [categories, activeCategory, handleCategoryChange]); // Include dependencies
 
   useEffect(() => {
     fetchData();
@@ -331,17 +307,6 @@ function Discover() {
       filterByStreamingService(serviceId);
     }
   };
-
-  //const handleViewMore = (type, category, title) => {
-    //navigate('/expanded-view', { 
-    //  state: { 
-    //    type,
-    //    category,
-    //    title,
-    //    streamingService: activeStreamingService 
-    //  } 
-   // });
- // };
 
   if (isLoading) {
     return (
@@ -471,19 +436,15 @@ function Discover() {
         </div>
 
         {/* Load More / Infinite Scroll Indicator */}
-       // {hasMore && !isLoading && (
-       //   <div
-       //     ref={loadMoreRef}
-       //     className="flex justify-center items-center py-8"
-       //   >
-       //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-       //   </div>
-      //  )}
+        <div
+          ref={loadMoreRef}
+          className="flex justify-center items-center py-8"
+        >
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
 
-       
-        {showScrollToTop && (
-          <ScrollToTop />
-        )}
+        {/* Scroll to Top Button */}
+        <ScrollToTop />
       </div>
     </div>
   );
