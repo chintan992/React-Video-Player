@@ -4,7 +4,8 @@ import { useDarkMode } from './DarkModeContext';
 import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { useSearch } from '../context/SearchContext';
-import { FiSun, FiMoon, FiSearch, FiBell, FiMenu, FiX, FiUser, FiLogOut, FiSettings } from 'react-icons/fi';
+
+import { BsSunFill, BsMoonStarsFill, BsSearch, BsBell, BsList, BsX, BsPerson, BsBoxArrowRight, BsGearFill } from 'react-icons/bs'; // Correct import path
 
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -107,7 +108,7 @@ const Navbar = () => {
                 }`}
                 aria-label="Search"
               >
-                <FiSearch className="w-5 h-5" />
+                <BsSearch className="w-5 h-5" />
               </button>
 
               {/* Dark Mode Toggle */}
@@ -120,7 +121,7 @@ const Navbar = () => {
                 }`}
                 aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {isDarkMode ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5" />}
+                {isDarkMode ? <BsMoonStarsFill className="w-5 h-5" /> : <BsSunFill className="w-5 h-5" />}
               </button>
 
               {/* Notifications */}
@@ -133,7 +134,7 @@ const Navbar = () => {
                   }`}
                   aria-label="Notifications"
                 >
-                  <FiBell className="w-5 h-5" />
+                  <BsBell className="w-5 h-5" />
                   {notifications.length > 0 && (
                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
                   )}
@@ -158,7 +159,7 @@ const Navbar = () => {
                         className="w-8 h-8 rounded-full"
                       />
                     ) : (
-                      <FiUser className="w-5 h-5" />
+                      <BsPerson className="w-5 h-5" />
                     )}
                   </button>
 
@@ -174,7 +175,7 @@ const Navbar = () => {
                         }`}
                       >
                         <div className="flex items-center space-x-2">
-                          <FiUser className="w-4 h-4" />
+                          <BsPerson className="w-4 h-4" />
                           <span>Profile</span>
                         </div>
                       </Link>
@@ -185,7 +186,7 @@ const Navbar = () => {
                         }`}
                       >
                         <div className="flex items-center space-x-2">
-                          <FiSettings className="w-4 h-4" />
+                          <BsGearFill className="w-4 h-4" />
                           <span>Settings</span>
                         </div>
                       </Link>
@@ -196,7 +197,7 @@ const Navbar = () => {
                         }`}
                       >
                         <div className="flex items-center space-x-2">
-                          <FiLogOut className="w-4 h-4" />
+                          <BsBoxArrowRight className="w-4 h-4" />
                           <span>Logout</span>
                         </div>
                       </button>
@@ -226,9 +227,9 @@ const Navbar = () => {
                 }`}
               >
                 {isMenuOpen ? (
-                  <FiX className="w-6 h-6" />
+                  <BsX className="w-6 h-6" />
                 ) : (
-                  <FiMenu className="w-6 h-6" />
+                  <BsList className="w-6 h-6" />
                 )}
               </button>
             </div>
@@ -281,7 +282,7 @@ const Navbar = () => {
             }`}>
               <form onSubmit={handleSearchSubmit} className="p-4">
                 <div className="flex items-center space-x-4">
-                  <FiSearch className={`w-5 h-5 ${
+                  <BsSearch className={`w-5 h-5 ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
                   }`} />
                   <input
