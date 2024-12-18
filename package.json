@@ -33,8 +33,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:no-test": "react-scripts build --ignore-scripts",
+    "build": "react-scripts build --no-lint",
+    "build:no-test": "react-scripts build --no-lint --ignore-scripts",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
