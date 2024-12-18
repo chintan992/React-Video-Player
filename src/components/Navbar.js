@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState([]);
+ // const [notifications, setNotifications] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
 

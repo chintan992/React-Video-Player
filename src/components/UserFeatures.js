@@ -8,7 +8,7 @@ import { useDarkMode } from './DarkModeContext';
 const UserFeatures = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { isDarkMode } = useDarkMode();
+ // const { isDarkMode } = useDarkMode();
   const { 
     watchlist, 
     favorites, 

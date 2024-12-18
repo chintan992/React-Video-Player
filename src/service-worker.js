@@ -5,14 +5,14 @@
 // for the list of available Workbox modules, or add any other
 // code you'd like.
 
-import { clientsClaim } from 'workbox-core';
-import { ExpirationPlugin } from 'workbox-expiration';
+
+
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkOnly } from 'workbox-strategies';
+import { NetworkOnly } from 'workbox-strategies';
 
 // Define version directly
-const APP_VERSION = '0.1.0';
+//const APP_VERSION = '0.1.0';
 
 // Cache names
 const CACHE_NAME = 'video-player-cache-v1';

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FaPlay, FaHeart, FaShare, FaPlus } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import { FaPlay, FaHeart, FaShare } from 'react-icons/fa';
+//import toast from 'react-hot-toast';
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -11,7 +11,7 @@ import {
 
 const MediaCard = ({ item, onWatchlistToggle, isInWatchlist }) => {
   const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
+ // const [isHovered, setIsHovered] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
   const handlePlayClick = () => {

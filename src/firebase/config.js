@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import { useUserFeatures } from '../hooks/useUserFeatures';
 import { getRecommendations } from '../api/tmdbApi';
-import MediaForm from './MediaForm';
+//import MediaForm from './MediaForm';
 import VideoSection from './VideoSection';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
@@ -75,8 +75,8 @@ function WatchPage() {
     removeFromWatchlist,
     addToFavorites,
     removeFromFavorites,
-    addToWatchHistory,
-    removeFromWatchHistory
+    addToWatchHistory
+    //removeFromWatchHistory
   } = useUserFeatures();
 
   // Available APIs

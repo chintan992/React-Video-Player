@@ -10,8 +10,8 @@ const ShareTargetHandler = () => {
         // Get the shared data from the URL parameters
         const params = new URLSearchParams(window.location.search);
         const title = params.get('title') || '';
-        const text = params.get('text') || '';
-        const url = params.get('url') || '';
+       // const text = params.get('text') || '';
+       // const url = params.get('url') || '';
 
         // Handle shared video files
         if (window.location.pathname === '/share-target' && navigator.serviceWorker) {

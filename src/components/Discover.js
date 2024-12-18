@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import debounce from 'lodash.debounce';
 import toast from 'react-hot-toast';
 
 // Components
 import MediaCard from './common/MediaCard';
-import FilterBar from './common/FilterBar';
+
 import FeaturedContent from './common/FeaturedContent';
 import ScrollToTop from './common/ScrollToTop';
-import { MediaItemSkeleton, FeaturedSkeleton, FiltersSkeleton } from './common/SkeletonLoader';
+import { MediaItemSkeleton } from './common/SkeletonLoader';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import MediaItem from './MediaItem';
+
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -44,11 +44,11 @@ function Discover() {
   const [activeStreamingService, setActiveStreamingService] = useState(null);
   
   // New state variables
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeSort, setActiveSort] = useState('popularity.desc');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  //const [searchQuery] = useState('');
+  //const [activeSort, setActiveSort] = useState('popularity.desc');
+  //const [page, setPage] = useState(1);
+  //const [hasMore, setHasMore] = useState(true);
+  //const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [mediaItems, setMediaItems] = useState([]);
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('watchlist');
@@ -332,16 +332,16 @@ function Discover() {
     }
   };
 
-  const handleViewMore = (type, category, title) => {
-    navigate('/expanded-view', { 
-      state: { 
-        type,
-        category,
-        title,
-        streamingService: activeStreamingService 
-      } 
-    });
-  };
+  //const handleViewMore = (type, category, title) => {
+    //navigate('/expanded-view', { 
+    //  state: { 
+    //    type,
+    //    category,
+    //    title,
+    //    streamingService: activeStreamingService 
+    //  } 
+   // });
+ // };
 
   if (isLoading) {
     return (
