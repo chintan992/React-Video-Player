@@ -2,13 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
-import debounce from 'lodash.debounce';
 import toast from 'react-hot-toast';
 
 // Components
 import MediaCard from './common/MediaCard';
 import FeaturedContent from './common/FeaturedContent';
-import ScrollToTop from './common/ScrollToTop';
 import { MediaItemSkeleton } from './common/SkeletonLoader';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
@@ -47,19 +45,10 @@ function Discover() {
   });
 
   // Intersection Observer for infinite scroll
-  const { ref: loadMoreRef, inView } = useInView({
+  const { ref: loadMoreRef } = useInView({
     threshold: 0.5,
     triggerOnce: true
   });
-
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((query) => {
-      // Implement search functionality
-      console.log('Searching for:', query);
-    }, 500),
-    []
-  );
 
   // Handle watchlist
   const handleWatchlistToggle = (item) => {
@@ -252,7 +241,7 @@ function Discover() {
     }
   };
 
-  const handleCategoryChange = (category) => {
+  const handleCategoryChange = useCallback((category) => {
     setActiveCategory(category);
     
     // Filter media items based on category
@@ -288,11 +277,11 @@ function Discover() {
     }
 
     setMediaItems(filteredItems);
-  };
+  }, [categories]); // Add categories as dependency
 
   useEffect(() => {
     handleCategoryChange(activeCategory);
-  }, [categories, activeCategory, handleCategoryChange]); // Include dependencies
+  }, [activeCategory, handleCategoryChange]); // Remove categories from dependencies since it's included in handleCategoryChange
 
   useEffect(() => {
     fetchData();
@@ -443,8 +432,6 @@ function Discover() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
         </div>
 
-        {/* Scroll to Top Button */}
-        <ScrollToTop />
       </div>
     </div>
   );

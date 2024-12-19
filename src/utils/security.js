@@ -87,15 +87,18 @@ export const addSecurityMetaTags = () => {
     {
       'http-equiv': 'Content-Security-Policy',
       content: `
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://identitytoolkit.googleapis.com;
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data: https: blob:;
-        media-src 'self' blob: https:;
-        connect-src 'self' https://identitytoolkit.googleapis.com https://api.themoviedb.org https://securetoken.googleapis.com https://*.firebaseio.com https://*.googleapis.com;
-        font-src 'self';
+        default-src 'self' * data: blob:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' *;
+        style-src 'self' 'unsafe-inline' *;
+        img-src 'self' data: blob: *;
+        media-src 'self' blob: *;
+        frame-src 'self' *;
+        child-src 'self' *;
+        connect-src 'self' *;
+        font-src 'self' *;
+        worker-src 'self' blob: *;
         object-src 'none';
-        frame-ancestors 'none';
+        frame-ancestors 'self';
       `.replace(/\s+/g, ' ').trim()
     },
     {
