@@ -28,15 +28,15 @@ const FeaturedContent = ({ item }) => {
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+      <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-8 md:p-12">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-4"
+          className="mb-2 sm:mb-4"
         >
-          <span className="px-3 py-1 bg-primary-500 text-white rounded-full text-sm font-medium">
+          <span className="px-2 py-1 sm:px-3 sm:py-1 bg-primary-500 text-white rounded-full text-xs sm:text-sm font-medium">
             Featured
           </span>
         </motion.div>
@@ -46,7 +46,7 @@ const FeaturedContent = ({ item }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-4"
+          className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-4"
         >
           {item.title || item.name}
         </motion.h2>
@@ -56,7 +56,7 @@ const FeaturedContent = ({ item }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-gray-200 text-lg mb-6 line-clamp-2 md:line-clamp-3 max-w-2xl"
+          className="text-gray-200 text-sm sm:text-lg mb-4 sm:mb-6 line-clamp-2 sm:line-clamp-3 max-w-full sm:max-w-2xl"
         >
           {item.overview}
         </motion.p>
@@ -66,16 +66,16 @@ const FeaturedContent = ({ item }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="flex items-center gap-4 mb-6"
+          className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6"
         >
-          <span className="bg-yellow-500 text-black px-2 py-0.5 rounded font-medium">
+          <span className="bg-yellow-500 text-black px-2 py-0.5 rounded text-xs sm:text-sm font-medium">
             {item.vote_average?.toFixed(1)}
           </span>
-          <span className="text-gray-300">
+          <span className="text-gray-300 text-xs sm:text-sm">
             {new Date(item.release_date || item.first_air_date).getFullYear()}
           </span>
           {item.adult && (
-            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-sm">
+            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs sm:text-sm">
               18+
             </span>
           )}
@@ -86,13 +86,13 @@ const FeaturedContent = ({ item }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="flex items-center gap-4"
+          className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4"
         >
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePlayClick}
-            className="px-8 py-3 bg-white text-black rounded-lg font-medium flex items-center gap-2 hover:bg-white/90 transition-colors"
+            className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-2 bg-white text-black rounded-lg text-sm sm:text-base font-medium flex items-center justify-center gap-2 hover:bg-white/90 transition-colors"
           >
             <FaPlay /> Play Now
           </motion.button>
@@ -100,7 +100,7 @@ const FeaturedContent = ({ item }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleMoreInfoClick}
-            className="px-8 py-3 bg-gray-600/80 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-gray-600/90 transition-colors"
+            className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-2 bg-gray-600/80 text-white rounded-lg text-sm sm:text-base font-medium flex items-center justify-center gap-2 hover:bg-gray-600/90 transition-colors"
           >
             <FaInfoCircle /> More Info
           </motion.button>

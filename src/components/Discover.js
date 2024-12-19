@@ -26,6 +26,7 @@ const streamingServices = [
 ];
 
 function Discover() {
+  // eslint-disable-next-line
   const navigate = useNavigate();
   const [categories, setCategories] = useState({
     latestMovies: [],
@@ -325,14 +326,14 @@ function Discover() {
   }
 
   return (
-    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Featured Content Carousel */}
         {featuredContent && featuredContent.length > 0 && (
           <section className="mb-12">
             <Slider {...carouselSettings}>
               {featuredContent.map((item, index) => (
-                <div key={item.id}>
+                <div key={item.id} className="px-2 sm:px-4">
                   <FeaturedContent item={item} />
                 </div>
               ))}
@@ -341,10 +342,10 @@ function Discover() {
         )}
 
         {/* Filters */}
-        <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 mb-8">
+        <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 mb-8 overflow-x-auto">
           <div className="flex flex-wrap gap-4 items-center justify-between">
             {/* Category Tabs */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 overflow-x-auto">
               <button
                 onClick={() => handleCategoryChange('all')}
                 className={`px-4 py-2 rounded-lg transition-colors ${
@@ -378,7 +379,7 @@ function Discover() {
             </div>
 
             {/* Streaming Services */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 overflow-x-auto">
               {streamingServices.map((service) => (
                 <button
                   key={service.id}
