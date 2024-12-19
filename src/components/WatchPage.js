@@ -79,47 +79,58 @@ function WatchPage() {
     //removeFromWatchHistory
   } = useUserFeatures();
 
-  // Available APIs
+  // Available APIs - update the list with proper configurations
   const availableApis = [
     { 
       id: 'multiembed', 
-      name: 'MultiEmbed', 
-      description: 'Primary streaming source with multiple mirrors' 
+      name: 'MultiEmbed',
+      baseUrl: 'https://multiembed.mov', 
+      description: 'Primary streaming source with multiple mirrors',
+      isWorking: true
     },
     { 
       id: 'autoembed', 
-      name: 'AutoEmbed', 
-      description: 'Automatic source selection' 
+      name: 'AutoEmbed',
+      baseUrl: 'https://autoembed.to', 
+      description: 'Automatic source selection',
+      isWorking: true
     },
     { 
       id: '2embed', 
-      name: '2Embed', 
-      description: 'Fast and stable playback' 
-    },
-    { 
-      id: 'newMultiembed', 
-      name: 'New MultiEmbed', 
-      description: 'Updated version with enhanced quality' 
+      name: '2Embed',
+      baseUrl: 'https://2embed.org', 
+      description: 'Fast and stable playback',
+      isWorking: true
     },
     { 
       id: 'vidsrc', 
-      name: 'VidSrc', 
-      description: 'High-quality video streaming' 
-    },
-    { 
-      id: 'newAutoembed', 
-      name: 'New AutoEmbed', 
-      description: 'Latest auto-source selection' 
+      name: 'VidSrc',
+      baseUrl: 'https://vidsrc.me', 
+      description: 'High-quality video streaming',
+      isWorking: true
     }
   ];
 
-  // Handle API change
+  // Handle API change with improved logic
   const handleApiChange = (apiType) => {
+    // Reset video state
+    setIsVideoReady(false);
+    
+    // Update media data with new API
     setMediaData(prev => ({
       ...prev,
-      apiType
+      apiType,
+      // Reset episode and season for TV shows to ensure proper reload
+      ...(type === 'tv' && {
+        episodeNo: prev.episodeNo,
+        season: prev.season
+      })
     }));
-    setIsVideoReady(false); // Reset video state when API changes
+
+    // Force video reload after a short delay
+    setTimeout(() => {
+      setIsVideoReady(true);
+    }, 100);
   };
 
   // Check if item is in user lists
@@ -456,6 +467,57 @@ function WatchPage() {
     </div>
   );
 
+  // Modify the API Selection component rendering
+  const renderApiSelection = () => (
+    <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <h2 className="text-lg font-semibold mb-4">Select Video Source</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {availableApis.filter(api => api.isWorking).map((api) => (
+          <button
+            key={api.id}
+            onClick={() => handleApiChange(api.id)}
+            className={`flex flex-col p-4 rounded-lg border-2 transition-all duration-200
+              ${mediaData.apiType === api.id
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+              }
+              ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
+            `}
+          >
+            <div className="flex justify-between items-start mb-2">
+              <h3 className={`font-medium
+                ${mediaData.apiType === api.id
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-gray-900 dark:text-white'
+                }`}
+              >
+                {api.name}
+              </h3>
+              {mediaData.apiType === api.id && (
+                <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {api.description}
+            </p>
+          </button>
+        ))}
+      </div>
+      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            If the current source isn't working, try switching to a different one. Some sources may work better than others depending on your location and the content.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
       <ErrorBoundary>
@@ -468,6 +530,7 @@ function WatchPage() {
                 isVideoReady={isVideoReady}
                 onSubmit={handleSubmit}
               />
+              {renderApiSelection()}
               
               {/* Season and Episode Selection for TV Shows */}
               {type === 'tv' && (
@@ -529,63 +592,6 @@ function WatchPage() {
                 </div>
               )}
 
-              {/* API Selection */}
-              <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold mb-4">Select Video Source</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {availableApis.map((api) => (
-                    <button
-                      key={api.id}
-                      onClick={() => handleApiChange(api.id)}
-                      className={`p-4 rounded-lg border-2 transition-all duration-200
-                        ${mediaData.apiType === api.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                        }
-                        ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
-                      `}
-                    >
-                      <div className="text-left">
-                        <h3 className={`font-medium mb-1
-                          ${mediaData.apiType === api.id
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-gray-900 dark:text-white'
-                          }`}
-                        >
-                          {api.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {api.description}
-                        </p>
-                      </div>
-                      {mediaData.apiType === api.id && (
-                        <div className="mt-2 flex items-center text-blue-600 dark:text-blue-400">
-                          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-sm">Currently Selected</span>
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="flex items-start">
-                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        If the current source isn't working well, try switching to a different one. New sources may provide better playback quality or stability.
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                        Recommended: Try VidSrc or 2Embed first for the best experience.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
               {item && (
                 <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                   <div className="flex justify-between items-start mb-4">
