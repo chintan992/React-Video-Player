@@ -83,8 +83,8 @@ function WatchPage() {
   const availableApis = [
     { 
       id: 'multiembed', 
-      name: 'MultiEmbed',
-      baseUrl: 'https://multiembed.mov', 
+      name: 'VidLink Pro',
+      baseUrl: 'https://vidlink.pro', 
       description: 'Primary streaming source with multiple mirrors',
       isWorking: true
     },
