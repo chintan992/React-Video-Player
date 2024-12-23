@@ -15,8 +15,8 @@ const getIframeSrc = (mediaData) => {
   switch (apiType) {
     case 'multiembed':
       return type === 'series'
-        ? `https://multiembed.mov/directstream.php?video_id=${seriesId}&tmdb=1&s=${season}&e=${episodeNo}${antiPopupParams.multiembed}`
-        : `https://multiembed.mov/directstream.php?video_id=${movieId}&tmdb=1${antiPopupParams.multiembed}`;
+        ? 'https://vidlink.pro/tv/{seriesId}/{season}/{episodeNo}'
+        : `https://vidlink.pro/movie/{movieId}}`;
     case 'autoembed':
       baseUrl = 'https://player.autoembed.cc/embed/';
       return type === 'series'
