@@ -148,14 +148,21 @@ To set up the project locally, follow these steps:
 │   └── workflows/
 │       └── node.js.yml
 ├── .gitignore
+├── .idx/
+│   ├── dev.nix
+│   └── integrations.json
 ├── .netlify/
 │   └── state.json
+├── .vscode/
+│   └── settings.json
+├── 85f7f045f99c649f87f9d0baa67c7663.txt
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── IMPROVEMENTS.md
 ├── LICENSE
 ├── README.md
 ├── api list.txt
+├── image.png
 ├── netlify.toml
 ├─] node_modules/ (ignored)
 ├── package-lock.json
@@ -171,7 +178,8 @@ To set up the project locally, follow these steps:
 │   ├── index.html
 │   ├── manifest.json
 │   ├── robots.txt
-│   └── site.webmanifest
+│   ├── site.webmanifest
+│   └── web.config
 ├── src/
 │   ├── App.js
 │   ├── api/
@@ -189,14 +197,28 @@ To set up the project locally, follow these steps:
 │   │   ├── MediaDetail.js
 │   │   ├── MediaForm.js
 │   │   ├── MediaItem.js
+│   │   ├── Navbar/
+│   │   │   ├── Navbar.js
+│   │   │   ├── ProfileDropdown.js
+│   │   │   └── navConfig.js
 │   │   ├── Navbar.js
 │   │   ├── ScrollToTop.js
 │   │   ├── Search.js
+│   │   ├── ShareTargetHandler.js
 │   │   ├── Signup.js
+│   │   ├── SplashScreen.js
 │   │   ├── Support.js
 │   │   ├── UserFeatures.js
 │   │   ├── VideoSection.js
-│   │   └── WatchPage.js
+│   │   ├── WatchPage.js
+│   │   └── common/
+│   │       ├── FeaturedContent.js
+│   │       ├── FilterBar.js
+│   │       ├── MediaCard.js
+│   │       ├── ScrollToTop.js
+│   │       └── SkeletonLoader.js
+│   ├── config/
+│   ├── constants/
 │   ├── context/
 │   │   ├── AuthContext.js
 │   │   └── SearchContext.js
@@ -206,6 +228,7 @@ To set up the project locally, follow these steps:
 │   │   └── userService.js
 │   ├── hooks/
 │   │   ├── useInfiniteScroll.js
+│   │   ├── useInstallPrompt.js
 │   │   └── useUserFeatures.js
 │   ├── index.css
 │   ├── index.js
@@ -214,9 +237,13 @@ To set up the project locally, follow these steps:
 │   ├── service-worker.js
 │   ├── serviceWorkerRegistration.js
 │   ├── setupTests.js
-│   └── styles/
-│       └── colors.css
+│   ├── styles/
+│   │   └── colors.css
+│   ├── tests/
+│   └── utils/
+│       └── security.js
 └── tailwind.config.js
+
 
 ```
 

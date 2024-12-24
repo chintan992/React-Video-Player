@@ -65,6 +65,7 @@ function WatchPage() {
     season: type === 'tv' ? '1' : '',
     movieId: type === 'movie' ? id : '',
   });
+  const iframeRef = useRef(null);
 
   // User Features
   const {
@@ -524,12 +525,16 @@ function WatchPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <VideoSection
-                ref={videoSectionRef}
-                mediaData={mediaData}
-                isVideoReady={isVideoReady}
-                onSubmit={handleSubmit}
-              />
+              <div className="relative">
+                <VideoSection
+                  ref={videoSectionRef}
+                  mediaData={mediaData}
+                  isVideoReady={isVideoReady}
+                  onSubmit={handleSubmit}
+                  iframeRef={iframeRef}
+                  allowFullscreen={true} // Add this prop
+                />
+              </div>
               {renderApiSelection()}
               
               {/* Season and Episode Selection for TV Shows */}

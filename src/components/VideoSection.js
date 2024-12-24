@@ -1,10 +1,8 @@
-// src/components/VideoSection.js
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getIframeSrc } from '../api';
 
-const VideoSection = React.memo(({ mediaData }) => {
+const VideoSection = React.forwardRef(({ mediaData, isVideoReady, onSubmit, iframeRef, allowFullscreen }, ref) => {
   const iframeSrc = getIframeSrc(mediaData);
-  const iframeRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [blockedPopups, setBlockedPopups] = useState(0);
 
@@ -34,7 +32,7 @@ const VideoSection = React.memo(({ mediaData }) => {
   }, []);
 
   useEffect(() => {
-    const currentIframe = iframeRef.current;
+    const currentIframe = iframeRef?.current;
     let cleanupFunctions = [];
     let popupInterval;
 
@@ -140,42 +138,40 @@ const VideoSection = React.memo(({ mediaData }) => {
     return () => {
       cleanupFunctions.forEach(cleanup => cleanup());
     };
-  }, [iframeSrc, createWindowProxy]);
+  }, [iframeSrc, createWindowProxy, iframeRef]);
 
   const handleOverlayClick = () => {
     setIsPlaying(true);
   };
 
   return (
-    <div className="relative w-full">
-      <div className="relative w-full h-0 pb-[56.25%]">
-        {iframeSrc && (
-          <>
-<iframe
-  ref={iframeRef}
-  src={iframeSrc}
-  className="absolute top-0 left-0 w-full h-full border-0 rounded-lg shadow-lg"
-  allowFullScreen
-  title="Video Player"
-  style={{
-    backgroundColor: '#000',
-    zIndex: 1
-  }}
-  referrerpolicy="origin"
-></iframe>
-            {!isPlaying && (
-              <div 
-                className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center cursor-pointer z-10 transition-opacity duration-300 hover:bg-opacity-50"
-                onClick={handleOverlayClick}
-              >
-                <div className="w-16 h-16 flex items-center justify-center bg-white bg-opacity-90 rounded-full transition-transform duration-300 hover:scale-110">
-                  <div className="w-0 h-0 border-l-[18px] border-l-black border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-1"></div>
-                </div>
+    <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
+      {isVideoReady && (
+        <iframe
+          ref={iframeRef}
+          src={iframeSrc}
+          className="w-full h-full"
+          title={`Video player for ${mediaData.type === 'movie' ? 'movie' : 'episode'}`}
+          allow="fullscreen"
+          allowFullScreen={allowFullscreen}
+          mozallowfullscreen="true"
+          webkitallowfullscreen="true"
+        />
+      )}
+      {iframeSrc && (
+        <>
+          {!isPlaying && (
+            <div 
+              className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center cursor-pointer z-10 transition-opacity duration-300 hover:bg-opacity-50"
+              onClick={handleOverlayClick}
+            >
+              <div className="w-16 h-16 flex items-center justify-center bg-white bg-opacity-90 rounded-full transition-transform duration-300 hover:scale-110">
+                <div className="w-0 h-0 border-l-[18px] border-l-black border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-1"></div>
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          )}
+        </>
+      )}
       {blockedPopups > 0 && (
         <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           {blockedPopups} popup{blockedPopups !== 1 ? 's' : ''} blocked
@@ -184,5 +180,7 @@ const VideoSection = React.memo(({ mediaData }) => {
     </div>
   );
 });
+
+VideoSection.displayName = 'VideoSection';
 
 export default VideoSection;
