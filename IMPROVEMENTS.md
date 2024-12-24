@@ -1,3 +1,13 @@
+Add subtle animations for dropdown menus and modals Implement a collapsible navbar for better mobile responsiveness Add breadcrumbs for better navigation hierarchy Make the search modal more compact on mobile devices Add hover tooltips for icon-only buttons Implement a more accessible color contrast system Add micro-interactions for better user feedback Add search history functionality to store recent searches Add a notification system/bell icon for user alerts Add progressive web app (PWA) install button when applicable Implement route-based active link highlighting with more visual feedback
+
+
+
+
+
+
+
+
+
 Interactive Features
 Live Chat:
 
