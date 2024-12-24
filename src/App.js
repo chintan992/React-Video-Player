@@ -13,6 +13,8 @@ import SplashScreen from './components/SplashScreen';
 import useInstallPrompt from './hooks/useInstallPrompt';
 import ShareTargetHandler from './components/ShareTargetHandler';
 import Footer from './components/Footer'; // Import Footer
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfUse from './components/TermsOfUse';
 
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
@@ -59,44 +61,45 @@ function AppContent() {
   }, [isDarkMode]);
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navbar />
-        <main className="min-h-screen pt-16">
-          <ScrollToTop />
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/support" element={<Support />} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar />
+      <main className="min-h-screen pt-16">
+        <ScrollToTop />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
 
-              {/* Default Route */}
-              <Route path="/" element={<Discover />} />
+            {/* Default Route */}
+            <Route path="/" element={<Discover />} />
 
-              {/* Protected Routes */}
-              <Route path="/search" element={
-                <ProtectedRoute>
-                  <Search />
-                </ProtectedRoute>
-              } />
-              <Route path="/watch/:type/:id" element={
-                <ProtectedRoute>
-                  <WatchPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <UserFeatures />
-                </ProtectedRoute>
-              } />
-              <Route path="/share-target" element={<ShareTargetHandler />} />
-            </Routes>
-          </Suspense>
-        </main>
-      </div>
-    </Router>
+            {/* Protected Routes */}
+            <Route path="/search" element={
+              <ProtectedRoute>
+                <Search />
+              </ProtectedRoute>
+            } />
+            <Route path="/watch/:type/:id" element={
+              <ProtectedRoute>
+                <WatchPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <UserFeatures />
+              </ProtectedRoute>
+            } />
+            <Route path="/share-target" element={<ShareTargetHandler />} />
+          </Routes>
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
@@ -105,39 +108,34 @@ function App() {
   const { isInstallable, handleInstallClick } = useInstallPrompt();
 
   return (
-    <>
-      {showSplash ? (
-        <SplashScreen onFinish={() => setShowSplash(false)} />
-      ) : (
-        <DarkModeProvider> 
-          <ErrorBoundary>
-            <AuthProvider>
-              <SearchProvider> {/* Wrap AppContent with SearchProvider */}
-                <div className="min-h-screen flex flex-col">
-                  <div className="flex-grow">
-                    <div className="app">
-                      {isInstallable && (
-                        <button 
-                          onClick={handleInstallClick}
-                          className="fixed bottom-4 right-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200 flex items-center space-x-2 z-40"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                          <span>Install App</span>
-                        </button>
-                      )}
-                      <AppContent />
-                    </div>
-                  </div>
-                  <Footer />
-                </div>
-              </SearchProvider>
-            </AuthProvider>
-          </ErrorBoundary>
-        </DarkModeProvider>
-      )}
-    </>
+    <Router>
+      <DarkModeProvider> 
+        <ErrorBoundary>
+          <AuthProvider>
+            <SearchProvider> {/* Wrap AppContent with SearchProvider */}
+              {showSplash ? (
+                <SplashScreen onFinish={() => setShowSplash(false)} />
+              ) : (
+                <>
+                  {isInstallable && (
+                    <button 
+                      onClick={handleInstallClick}
+                      className="fixed bottom-4 right-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200 flex items-center space-x-2 z-40"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 0 01-1.414 0l-3-3a1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                      <span>Install App</span>
+                    </button>
+                  )}
+                  <AppContent />
+                </>
+              )}
+            </SearchProvider>
+          </AuthProvider>
+        </ErrorBoundary>
+      </DarkModeProvider>
+    </Router>
   );
 }
 
