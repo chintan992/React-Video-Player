@@ -22,7 +22,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#f39c12",
+  "theme_color": "#10b981",
   "background_color": "#ecf0f1",
   "orientation": "any",
   "categories": ["entertainment", "video"],
