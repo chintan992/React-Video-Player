@@ -26,7 +26,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.key === '/' && (e.metaKey || e.ctrlKey)) {
+      // Check if the user is not typing in an input or textarea
+      const isTyping = ['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase());
+      
+      if (e.key === '/' && !isTyping) {
         e.preventDefault();
         setIsSearchOpen(true);
       } else if (e.key === 'Escape') {
