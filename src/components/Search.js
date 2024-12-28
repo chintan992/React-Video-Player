@@ -4,7 +4,6 @@ import { useDarkMode } from './DarkModeContext';
 import MediaDetail from './MediaDetail';
 import MediaItem from './MediaItem';
 import AdvancedSearchForm from './AdvancedSearchForm';
-import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { searchMedia, getMediaDetails, advancedSearch } from '../api/tmdbApi';
 
 function Search() {
@@ -81,8 +80,6 @@ function Search() {
     }
   }, [query, page, isLoading, fetchData, advancedFilters]);
 
-  const { lastElementRef } = useInfiniteScroll(loadMore);
-
   const handleItemClick = async (item) => {
     try {
       if (!process.env.REACT_APP_TMDB_API_KEY) {
@@ -125,25 +122,27 @@ function Search() {
   };
 
   return (
-    <div className={`flex flex-col items-center p-8 transition-all ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-      <div className="w-full max-w-md mb-4 space-y-2">
-        <div className="flex gap-2">
+    <div className={`flex flex-col items-center min-h-screen p-4 md:p-8 transition-all ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+      <div className="w-full max-w-4xl mb-6 space-y-3">
+        <div className="flex gap-3">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for movies and TV shows..."
-            className={`flex-1 p-2 border border-gray-300 rounded-md 
-                      ${isDarkMode ? 'bg-gray-800 text-white placeholder-gray-500' : 'bg-white text-black placeholder-gray-400'}`}
+            className={`flex-1 p-3 border-2 rounded-lg shadow-sm focus:ring-2 focus:outline-none transition-all
+                      ${isDarkMode 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500' 
+                        : 'bg-white border-gray-200 text-black placeholder-gray-400 focus:ring-blue-400'}`}
             aria-label="Search for movies and TV shows"
           />
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`px-4 py-2 rounded-md transition-colors
+            className={`px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105
                       ${isDarkMode 
-                        ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                        : 'bg-gray-200 hover:bg-gray-300 text-black'}`}
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
             aria-label="Toggle advanced search"
           >
             {showAdvanced ? 'Basic' : 'Advanced'}
@@ -151,7 +150,7 @@ function Search() {
         </div>
 
         {showAdvanced && (
-          <div className="mt-4">
+          <div className="mt-4 animate-fadeIn">
             <AdvancedSearchForm
               onSearch={handleAdvancedSearch}
               onClose={() => setShowAdvanced(false)}
@@ -161,12 +160,12 @@ function Search() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-lg" role="alert">
+        <div className="w-full max-w-4xl mb-6 p-4 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-100 rounded-lg shadow-md" role="alert">
           <p className="font-medium">{error}</p>
           {error !== 'No results found. Please try a different search term.' && (
             <button 
               onClick={() => fetchData(query, page)} 
-              className="mt-2 px-4 py-2 bg-red-200 dark:bg-red-800 rounded-md hover:bg-red-300 dark:hover:bg-red-700 transition-colors"
+              className="mt-3 px-4 py-2 bg-red-200 dark:bg-red-800 rounded-md hover:bg-red-300 dark:hover:bg-red-700 transition-colors"
             >
               Try Again
             </button>
@@ -174,24 +173,57 @@ function Search() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
-        {results.map(( item, index) => (
-          <MediaItem
-            key={`${item.id}-${index}`}
-            item={item}
-            onClick={() => handleItemClick(item)}
-            onKeyDown={(e) => handleKeyDown(e, item)}
-            ref={index === results.length - 1 ? lastElementRef : null}
-            className={`transition-transform transform hover:scale-105 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-4`}
-          />
-        ))}
+      <div className="w-full max-w-7xl">
+        {isLoading && results.length === 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className={`relative pb-[150%] rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {results.map((item, index) => (
+              <MediaItem
+                key={`${item.id}-${index}`}
+                item={item}
+                onClick={() => handleItemClick(item)}
+                onKeyDown={(e) => handleKeyDown(e, item)}
+                className={`transition-all duration-300
+                          ${isDarkMode ? 'bg-gray-800/50 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'}
+                          rounded-xl shadow-md hover:shadow-xl`}
+              />
+            ))}
+          </div>
+        )}
+
+        {results.length > 0 && !isLoading && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={loadMore}
+              className={`px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105
+                        ${isDarkMode 
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+            >
+              View More
+            </button>
+          </div>
+        )}
+
+        {isLoading && results.length > 0 && (
+          <div className="mt-8 flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+          </div>
+        )}
+
+        {results.length === 0 && !isLoading && (
+          <div className="mt-8 text-center">
+            <p className={`text-xl ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              No results found. Please try a different search.
+            </p>
+          </div>
+        )}
       </div>
-
-      {isLoading && <div className="mt-4">Loading...</div>}
-
-      {results.length === 0 && !isLoading && (
-        <div className="mt-4 text-gray-500">No results found. Please try a different search.</div>
-      )}
 
       {selectedItem && (
         <MediaDetail item={selectedItem} onClose={() => setSelectedItem(null)} />

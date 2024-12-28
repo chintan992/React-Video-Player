@@ -4,32 +4,39 @@ import { useDarkMode } from './DarkModeContext'; // Import the dark mode context
 
 const IMAGE_BASE_URL = process.env.REACT_APP_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p';
 
-const MediaItem = forwardRef(({ item, onClick, onKeyDown }, ref) => {
+const MediaItem = forwardRef(({ item, onClick, onKeyDown, className }, ref) => {
   const { isDarkMode } = useDarkMode(); // Get the dark mode state
+  const posterUrl = item.poster_path
+    ? `${IMAGE_BASE_URL}/w500${item.poster_path}`
+    : '/placeholder-poster.png'; // Make sure to add a placeholder image
 
   return (
-    <div 
+    <div
       ref={ref}
-      className={`rounded-lg overflow-hidden transition-transform transform hover:scale-105 cursor-pointer 
-                  ${isDarkMode ? 'bg-gray-800 text-white shadow-md hover:shadow-lg' : 'bg-white text-gray-800 shadow-md hover:shadow-lg'}`} 
       onClick={onClick}
       onKeyDown={onKeyDown}
-      tabIndex="0"
+      tabIndex={0}
       role="button"
-      aria-label={`View details for ${item.title || item.name}`}
+      className={`flex flex-col ${className} ${isDarkMode ? 'bg-gray-800 text-white shadow-md hover:shadow-lg' : 'bg-white text-gray-800 shadow-md hover:shadow-lg'}`}
     >
-      <img
-        src={item.poster_path 
-          ? `${IMAGE_BASE_URL}/w500${item.poster_path}`
-          : 'https://via.placeholder.com/500x750?text=No+Image'}
-        alt={item.title || item.name}
-        className="w-full h-64 object-cover"
-      />
-      <div className="p-4">
-        <h3 className="text-lg font-semibold">{item.title || item.name}</h3>
-        <p className="text-sm">{item.media_type === 'movie' ? 'Movie' : 'TV Show'}</p>
-        <p className="text-sm font-medium">Rating: {item.vote_average.toFixed(1)}</p>
-        <p className="text-sm">{(item.release_date || item.first_air_date || '').split('-')[0]}</p>
+      <div className="relative pb-[150%] w-full overflow-hidden rounded-lg">
+        <img
+          src={posterUrl}
+          alt={item.title || item.name}
+          className="absolute top-0 left-0 w-full h-full object-cover transition-transform hover:scale-105"
+          loading="lazy"
+          onError={(e) => {
+            e.target.src = '/placeholder-poster.png';
+          }}
+        />
+      </div>
+      <div className="mt-2 px-1">
+        <h3 className="font-medium truncate">
+          {item.title || item.name}
+        </h3>
+        <p className="text-sm opacity-75">
+          {new Date(item.release_date || item.first_air_date).getFullYear() || 'N/A'}
+        </p>
       </div>
     </div>
   );
@@ -48,6 +55,7 @@ MediaItem.propTypes = {
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onKeyDown: PropTypes.func.isRequired,
+  className: PropTypes.string,
 };
 
 MediaItem.displayName = 'MediaItem';
