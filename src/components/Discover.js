@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -44,12 +43,8 @@ function Discover() {
     const saved = localStorage.getItem('watchlist');
     return saved ? JSON.parse(saved) : [];
   });
-
-  // Intersection Observer for infinite scroll
-  const { ref: loadMoreRef } = useInView({
-    threshold: 0.5,
-    triggerOnce: true
-  });
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   // Handle watchlist
   const handleWatchlistToggle = (item) => {
@@ -242,8 +237,70 @@ function Discover() {
     }
   };
 
+  const handleViewMore = async () => {
+    setIsLoading(true);
+    const nextPage = page + 1;
+    
+    try {
+      let endpoint;
+      const currentCategory = activeCategory;
+      
+      // Get the correct endpoint based on both category and streaming service
+      if (activeStreamingService) {
+        switch (currentCategory) {
+          case 'movies':
+            endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
+            break;
+          case 'tv':
+            endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
+            break;
+          default:
+            endpoint = `${BASE_URL}/discover/all?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
+        }
+      } else {
+        switch (currentCategory) {
+          case 'movies':
+            endpoint = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${nextPage}`;
+            break;
+          case 'tv':
+            endpoint = `${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${nextPage}`;
+            break;
+          case 'trending':
+            endpoint = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${nextPage}`;
+            break;
+          default:
+            endpoint = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${nextPage}`;
+        }
+      }
+
+      const response = await fetch(endpoint);
+      const data = await response.json();
+
+      if (!data.results || data.results.length === 0) {
+        setHasMore(false);
+      } else {
+        // Append new items to existing ones
+        setMediaItems(prevItems => {
+          const newItems = data.results.filter(newItem => 
+            !prevItems.some(existingItem => existingItem.id === newItem.id)
+          );
+          return [...prevItems, ...newItems];
+        });
+        setPage(nextPage);
+      }
+    } catch (error) {
+      console.error('Error fetching more items:', error);
+      toast.error('Failed to load more items');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCategoryChange = useCallback((category) => {
     setActiveCategory(category);
+    setPage(1);
+    setHasMore(true);
+    setMediaItems([]); // Clear existing items when changing category
     
     // Filter media items based on category
     let filteredItems = [];
@@ -289,6 +346,10 @@ function Discover() {
   }, [fetchData]);
 
   const handleStreamingServiceClick = (serviceId) => {
+    setPage(1);
+    setHasMore(true);
+    setMediaItems([]); // Clear existing items when changing streaming service
+    
     if (activeStreamingService === serviceId) {
       setActiveStreamingService(null);
       fetchData();
@@ -425,13 +486,27 @@ function Discover() {
           )}
         </div>
 
-        {/* Load More / Infinite Scroll Indicator */}
-        <div
-          ref={loadMoreRef}
-          className="flex justify-center items-center py-8"
-        >
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-        </div>
+        {/* Replace infinite scroll indicator with View More button */}
+        {hasMore && (
+          <div className="flex justify-center mt-8 mb-12">
+            <button
+              onClick={handleViewMore}
+              disabled={isLoading}
+              className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
+                transition-colors duration-200 focus:outline-none focus:ring-2 
+                focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Loading...
+                </div>
+              ) : (
+                'View More'
+              )}
+            </button>
+          </div>
+        )}
 
       </div>
     </div>
