@@ -18,8 +18,30 @@ const Navbar = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Add online/offline detection
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      setErrorMessage('');
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      setErrorMessage('You are offline. Some features may be limited.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Move debounce function definition inside useCallback
   const debouncedSearch = useCallback((searchTerm) => {
@@ -29,11 +51,35 @@ const Navbar = () => {
         return;
       }
 
+      if (isOffline) {
+        setErrorMessage('Search is not available offline');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
+        setErrorMessage('');
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch(
-          `https://api.themoviedb.org/3/search/multi?api_key=${process.env.REACT_APP_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}&page=1`
+          `https://api.themoviedb.org/3/search/multi?api_key=${process.env.REACT_APP_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}&page=1`,
+          {
+            signal: controller.signal,
+            headers: {
+              'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+            }
+          }
         );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error('Search failed. Please try again.');
+        }
+
         const data = await response.json();
         
         const filteredResults = data.results
@@ -50,7 +96,11 @@ const Navbar = () => {
 
         setSuggestions(filteredResults);
       } catch (error) {
-        console.error('Error fetching suggestions:', error);
+        if (error.name === 'AbortError') {
+          setErrorMessage('Search timed out. Please try again.');
+        } else {
+          setErrorMessage(error.message || 'Failed to fetch suggestions');
+        }
         setSuggestions([]);
       } finally {
         setIsLoading(false);
@@ -58,7 +108,7 @@ const Navbar = () => {
     }, 300);
 
     return () => clearTimeout(debounceTimeout);
-  }, [setSuggestions, setIsLoading]); // Add proper dependencies
+  }, [isOffline]);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -364,8 +414,30 @@ const Navbar = () => {
                   </kbd>
                 </div>
 
+                {/* Error Message */}
+                {errorMessage && (
+                  <div className={`mt-2 px-4 py-2 text-sm rounded ${
+                    isDarkMode 
+                      ? 'bg-red-900/50 text-red-200' 
+                      : 'bg-red-100 text-red-600'
+                  }`}>
+                    {errorMessage}
+                  </div>
+                )}
+
+                {/* Offline Banner */}
+                {isOffline && (
+                  <div className={`mt-2 px-4 py-2 text-sm rounded ${
+                    isDarkMode 
+                      ? 'bg-gray-800 text-gray-300' 
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    You are currently offline
+                  </div>
+                )}
+
                 {/* Updated Suggestions dropdown */}
-                {(suggestions.length > 0 || isLoading) && (
+                {(suggestions.length > 0 || isLoading) && !errorMessage && (
                   <div className={`mt-2 py-2 ${
                     isDarkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'
                   }`}>
