@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getIframeSrc } from '../api';
 
-const VideoSection = React.forwardRef(({ mediaData, isVideoReady, onSubmit, iframeRef, allowFullscreen }, ref) => {
+const VideoSection = React.forwardRef(({ mediaData, isVideoReady, onSubmit, iframeRef, allowFullscreen, onSourceChange }, ref) => {
   const iframeSrc = getIframeSrc(mediaData);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [blockedPopups, setBlockedPopups] = useState(0);
 
   // Function to create a proxy window object
@@ -140,10 +139,6 @@ const VideoSection = React.forwardRef(({ mediaData, isVideoReady, onSubmit, ifra
     };
   }, [iframeSrc, createWindowProxy, iframeRef]);
 
-  const handleOverlayClick = () => {
-    setIsPlaying(true);
-  };
-
   return (
     <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
       {isVideoReady && (
@@ -152,25 +147,14 @@ const VideoSection = React.forwardRef(({ mediaData, isVideoReady, onSubmit, ifra
           src={iframeSrc}
           className="w-full h-full"
           title={`Video player for ${mediaData.type === 'movie' ? 'movie' : 'episode'}`}
-          allow="fullscreen"
-          allowFullScreen={allowFullscreen}
+          allow="fullscreen; autoplay"
+          allowFullScreen={true}
           mozallowfullscreen="true"
           webkitallowfullscreen="true"
+          msallowfullscreen="true"
+          frameBorder="0"
+          scrolling="no"
         />
-      )}
-      {iframeSrc && (
-        <>
-          {!isPlaying && (
-            <div 
-              className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center cursor-pointer z-10 transition-opacity duration-300 hover:bg-opacity-50"
-              onClick={handleOverlayClick}
-            >
-              <div className="w-16 h-16 flex items-center justify-center bg-white bg-opacity-90 rounded-full transition-transform duration-300 hover:scale-110">
-                <div className="w-0 h-0 border-l-[18px] border-l-black border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-1"></div>
-              </div>
-            </div>
-          )}
-        </>
       )}
       {blockedPopups > 0 && (
         <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">

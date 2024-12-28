@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import { useUserFeatures } from '../hooks/useUserFeatures';
 import { getRecommendations } from '../api/tmdbApi';
-//import MediaForm from './MediaForm';
+import { getStoredVideoSource, setStoredVideoSource, saveTVProgress, getTVProgress } from '../utils/storage';
 import VideoSection from './VideoSection';
+import { VIDEO_SOURCES } from '../api';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -59,13 +60,71 @@ function WatchPage() {
   const [episodes, setEpisodes] = useState([]);
   const [mediaData, setMediaData] = useState({
     type: type === 'movie' ? 'movie' : 'series',
-    apiType: 'multiembed', // default API
     seriesId: type === 'tv' ? id : '',
     episodeNo: type === 'tv' ? '1' : '',
     season: type === 'tv' ? '1' : '',
     movieId: type === 'movie' ? id : '',
   });
   const iframeRef = useRef(null);
+  const [videoSource, setVideoSource] = useState(() => getStoredVideoSource() || 'multiembed');
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
+
+  const handleSourceChange = (source) => {
+    setVideoSource(source);
+    setStoredVideoSource(source); // Save to storage when source changes
+    setIsVideoReady(false);
+    // Small delay to ensure iframe reloads
+    setTimeout(() => setIsVideoReady(true), 100);
+  };
+
+  // Add effect to sync source with storage on mount
+  useEffect(() => {
+    const savedSource = getStoredVideoSource();
+    if (savedSource) {
+      setVideoSource(savedSource);
+    }
+  }, []);
+
+  // Move progress loading to earlier in the component and update season fetching
+  useEffect(() => {
+    let savedProgress = null;
+    
+    const fetchSeasonsAndSetProgress = async () => {
+      if (type === 'tv' && id) {
+        try {
+          // Get saved progress first
+          savedProgress = getTVProgress(id);
+          
+          // Fetch seasons
+          const response = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`);
+          const data = await response.json();
+          setSeasons(data.seasons || []);
+          
+          if (savedProgress) {
+            // Use saved progress if available
+            setMediaData(prev => ({
+              ...prev,
+              season: savedProgress.season,
+              episodeNo: savedProgress.episode
+            }));
+          } else if (data.seasons?.length > 0) {
+            // Fall back to first season if no saved progress
+            setMediaData(prev => ({
+              ...prev,
+              season: data.seasons[0].season_number.toString()
+            }));
+          }
+          
+          // Set video ready after setting up season/episode
+          setIsVideoReady(true);
+        } catch (error) {
+          console.error('Error fetching seasons:', error);
+        }
+      }
+    };
+
+    fetchSeasonsAndSetProgress();
+  }, [type, id]); // Remove the separate progress loading effect
 
   // User Features
   const {
@@ -79,60 +138,6 @@ function WatchPage() {
     addToWatchHistory
     //removeFromWatchHistory
   } = useUserFeatures();
-
-  // Available APIs - update the list with proper configurations
-  const availableApis = [
-    { 
-      id: 'multiembed', 
-      name: 'VidLink Pro',
-      baseUrl: 'https://vidlink.pro', 
-      description: 'Primary streaming source with multiple mirrors',
-      isWorking: true
-    },
-    { 
-      id: 'autoembed', 
-      name: 'AutoEmbed',
-      baseUrl: 'https://autoembed.to', 
-      description: 'Automatic source selection',
-      isWorking: true
-    },
-    { 
-      id: '2embed', 
-      name: '2Embed',
-      baseUrl: 'https://2embed.org', 
-      description: 'Fast and stable playback',
-      isWorking: true
-    },
-    { 
-      id: 'vidsrc', 
-      name: 'VidSrc',
-      baseUrl: 'https://vidsrc.me', 
-      description: 'High-quality video streaming',
-      isWorking: true
-    }
-  ];
-
-  // Handle API change with improved logic
-  const handleApiChange = (apiType) => {
-    // Reset video state
-    setIsVideoReady(false);
-    
-    // Update media data with new API
-    setMediaData(prev => ({
-      ...prev,
-      apiType,
-      // Reset episode and season for TV shows to ensure proper reload
-      ...(type === 'tv' && {
-        episodeNo: prev.episodeNo,
-        season: prev.season
-      })
-    }));
-
-    // Force video reload after a short delay
-    setTimeout(() => {
-      setIsVideoReady(true);
-    }, 100);
-  };
 
   // Check if item is in user lists
   const isInWatchlist = watchlist?.some(i => i.id === Number(id));
@@ -233,7 +238,7 @@ function WatchPage() {
     fetchSeasons();
   }, [type, id]);
 
-  // Fetch episodes when season changes
+  // Update episodes fetching logic with correct dependencies and prevent infinite loops
   useEffect(() => {
     const fetchEpisodes = async () => {
       if (type === 'tv' && id && mediaData.season) {
@@ -243,11 +248,22 @@ function WatchPage() {
           );
           const data = await response.json();
           setEpisodes(data.episodes || []);
-          if (data.episodes?.length > 0) {
-            setMediaData(prevData => ({ 
-              ...prevData, 
-              episodeNo: '1' 
-            }));
+          
+          // Only set episode to 1 if there's no saved episode number and episodes exist
+          if (data.episodes?.length > 0 && !mediaData.episodeNo) {
+            // Use a state updater to ensure we have the latest state
+            setMediaData(prevData => {
+              // Only update if we still don't have an episode number
+              if (!prevData.episodeNo) {
+                setIsVideoReady(false);
+                setTimeout(() => setIsVideoReady(true), 100);
+                return { 
+                  ...prevData, 
+                  episodeNo: '1' 
+                };
+              }
+              return prevData;
+            });
           }
         } catch (error) {
           console.error('Error fetching episodes:', error);
@@ -256,13 +272,29 @@ function WatchPage() {
     };
 
     fetchEpisodes();
-  }, [type, id, mediaData.season]);
+  }, [type, id, mediaData.season, mediaData.episodeNo]); // Include episodeNo in dependencies
 
-  // Handle input changes for season and episode
+  // Update handleInputChange to automatically trigger video play
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setMediaData(prevData => ({ ...prevData, [name]: value }));
-    setIsVideoReady(false); // Reset video when selection changes
+    setMediaData(prevData => {
+      const newData = { ...prevData, [name]: value };
+      
+      // Save progress for both season and episode changes
+      if (type === 'tv') {
+        saveTVProgress(id, 
+          name === 'season' ? value : newData.season,
+          name === 'episodeNo' ? value : newData.episodeNo
+        );
+        addToWatchHistory({...item, media_type: type});
+      }
+      
+      return newData;
+    });
+
+    // Automatically trigger video load
+    setIsVideoReady(false);
+    setTimeout(() => setIsVideoReady(true), 100);
   };
 
   // Handle user actions
@@ -282,12 +314,15 @@ function WatchPage() {
     }
   };
 
+  // Update handleSubmit to ensure progress is saved when playing
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsVideoReady(true);
-    // Add to watch history when starting to watch
     if (item) {
       addToWatchHistory({...item, media_type: type});
+      if (type === 'tv') {
+        saveTVProgress(id, mediaData.season, mediaData.episodeNo);
+      }
     }
   };
 
@@ -299,6 +334,54 @@ function WatchPage() {
       window.location.reload();
     }
   };
+
+  const renderSourceSelector = () => (
+    <div className="mb-4">
+      <div className="relative">
+        <button
+          onClick={() => setShowSourceMenu(!showSourceMenu)}
+          className="w-full bg-white dark:bg-gray-800 px-4 py-2 rounded-lg flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            {VIDEO_SOURCES[videoSource].name}
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              ({VIDEO_SOURCES[videoSource].quality})
+            </span>
+          </span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {showSourceMenu && (
+          <>
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+              onClick={() => setShowSourceMenu(false)}
+            />
+            <div className="absolute mt-2 w-full rounded-lg bg-white dark:bg-gray-800 shadow-lg z-50">
+              {Object.entries(VIDEO_SOURCES).map(([key, { name, quality }]) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    handleSourceChange(key);
+                    setShowSourceMenu(false);
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex justify-between items-center"
+                >
+                  <span>{name}</span>
+                  <span className="text-xs text-gray-500">{quality}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -468,74 +551,24 @@ function WatchPage() {
     </div>
   );
 
-  // Modify the API Selection component rendering
-  const renderApiSelection = () => (
-    <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-      <h2 className="text-lg font-semibold mb-4">Select Video Source</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {availableApis.filter(api => api.isWorking).map((api) => (
-          <button
-            key={api.id}
-            onClick={() => handleApiChange(api.id)}
-            className={`flex flex-col p-4 rounded-lg border-2 transition-all duration-200
-              ${mediaData.apiType === api.id
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-              }
-              ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
-            `}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <h3 className={`font-medium
-                ${mediaData.apiType === api.id
-                  ? 'text-blue-600 dark:text-blue-400'
-                  : 'text-gray-900 dark:text-white'
-                }`}
-              >
-                {api.name}
-              </h3>
-              {mediaData.apiType === api.id && (
-                <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {api.description}
-            </p>
-          </button>
-        ))}
-      </div>
-      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <div className="flex items-start">
-          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            If the current source isn't working, try switching to a different one. Some sources may work better than others depending on your location and the content.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
       <ErrorBoundary>
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
+              {renderSourceSelector()}
               <div className="relative">
                 <VideoSection
                   ref={videoSectionRef}
-                  mediaData={mediaData}
+                  mediaData={{ ...mediaData, apiType: videoSource }}
                   isVideoReady={isVideoReady}
                   onSubmit={handleSubmit}
                   iframeRef={iframeRef}
-                  allowFullscreen={true} // Add this prop
+                  allowFullscreen={true}
+                  onSourceChange={handleSourceChange}
                 />
               </div>
-              {renderApiSelection()}
               
               {/* Season and Episode Selection for TV Shows */}
               {type === 'tv' && (
@@ -584,16 +617,6 @@ function WatchPage() {
                       </select>
                     </div>
                   </div>
-
-                  {/* Play Button */}
-                  <button 
-                    onClick={handleSubmit}
-                    className="mt-6 w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 
-                      transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2
-                      bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500"
-                  >
-                    Play Episode
-                  </button>
                 </div>
               )}
 

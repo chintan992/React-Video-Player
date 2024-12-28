@@ -1,5 +1,44 @@
 // src/api.js
 
+const VIDEO_SOURCES = {
+  multiembed: {
+    name: 'Vidlink',
+    quality: 'HD',
+  },
+  autoembed: {
+    name: 'AutoEmbed',
+    quality: 'HD',
+  },
+  '2embed': {
+    name: '2Embed',
+    quality: 'HD',
+  },
+  newMultiembed: {
+    name: 'MultiEmbed',
+    quality: 'Full HD',
+  },
+  new2embed: {
+    name: '2Embed.org',
+    quality: 'HD',
+  },
+  newAutoembed: {
+    name: 'AutoEmbed.co',
+    quality: 'Full HD',
+  },
+  vidsrc: {
+    name: 'VidSrc',
+    quality: 'HD',
+  },
+  moviesClub: {
+    name: 'MoviesAPI',
+    quality: 'Full HD',
+  },
+  notonGo: {
+    name: 'NontonGo',
+    quality: 'HD',
+  },
+};
+
 const getIframeSrc = (mediaData) => {
   const { type, apiType, seriesId, season, episodeNo, movieId } = mediaData;
   let baseUrl = '';
@@ -15,16 +54,16 @@ const getIframeSrc = (mediaData) => {
   switch (apiType) {
     case 'multiembed':
       return type === 'series'
-        ? `https://vidlink.pro/tv/${seriesId}/${season}/${episodeNo}`
-        : `https://vidlink.pro/movie/${movieId}`;
+        ? `https://vidlink.pro/tv/${seriesId}/${season}/${episodeNo}?autoplay=true&title=true`
+        : `https://vidlink.pro/movie/${movieId}?autoplay=true&title=true`;
     case 'autoembed':
       baseUrl = 'https://player.autoembed.cc/embed/';
       return type === 'series'
-        ? `${baseUrl}tv/${seriesId}/${season}/${episodeNo}${antiPopupParams.autoembed}`
-        : `${baseUrl}movie/${movieId}${antiPopupParams.autoembed}`;
+        ? `${baseUrl}tv/${seriesId}/${season}/${episodeNo}${antiPopupParams.autoembed}?autoplay=true`
+        : `${baseUrl}movie/${movieId}${antiPopupParams.autoembed}?autoplay=true`;
     case '2embed':
       return type === 'series'
-        ? `https://www.2embed.cc/embedtv/${seriesId}&s=${season}&e=${episodeNo}${antiPopupParams['2embed']}`
+        ? `https://www.2embed.cc/embed/tv/${seriesId}&s=${season}&e=${episodeNo}${antiPopupParams['2embed']}`
         : `https://www.2embed.cc/embed/${movieId}${antiPopupParams['2embed']}`;
     case 'newMultiembed':
       return type === 'series'
@@ -42,9 +81,17 @@ const getIframeSrc = (mediaData) => {
       return type === 'series'
         ? `https://vidsrc.xyz/embed/tv?tmdb=${seriesId}&season=${season}&episodeNo=${episodeNo}&ds_lang=en`
         : `https://vidsrc.xyz/embed/movie?tmdb=${movieId}&ds_lang=en`;
+    case 'moviesClub':
+      return type === 'series'
+        ? `https://moviesapi.club/tv/${seriesId}-${season}-${episodeNo}`
+        : `https://moviesapi.club/movie/${movieId}`;
+    case 'notonGo':
+      return type === 'series'
+        ? `https://www.NontonGo.win/embed/tv/${seriesId}/${season}/${episodeNo}`
+        : `https://www.NontonGo.win/embed/movie/${movieId}`;
     default:
       return '';
   }
 };
 
-export { getIframeSrc };
+export { getIframeSrc, VIDEO_SOURCES };
