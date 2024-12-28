@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from './DarkModeContext';
 import { logout } from '../firebase/auth';
@@ -15,8 +15,50 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Move debounce function definition inside useCallback
+  const debouncedSearch = useCallback((searchTerm) => {
+    const debounceTimeout = setTimeout(async () => {
+      if (!searchTerm.trim()) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `https://api.themoviedb.org/3/search/multi?api_key=${process.env.REACT_APP_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm)}&page=1`
+        );
+        const data = await response.json();
+        
+        const filteredResults = data.results
+          .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+          .slice(0, 5)
+          .map(item => ({
+            id: item.id,
+            title: item.title || item.name,
+            mediaType: item.media_type,
+            year: item.release_date || item.first_air_date
+              ? new Date(item.release_date || item.first_air_date).getFullYear()
+              : null
+          }));
+
+        setSuggestions(filteredResults);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(debounceTimeout);
+  }, [setSuggestions, setIsLoading]); // Add proper dependencies
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -42,13 +84,43 @@ const Navbar = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
-  const handleSearchSubmit = (e) => {
+  // Update the handleSearchSubmit to handle direct searches vs suggestion clicks
+  const handleSearchSubmit = (e, suggestionData = null) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
+    if (suggestionData) {
+      // If suggestion clicked, navigate to specific watch page
+      const route = suggestionData.mediaType === 'movie' ? 'movie' : 'tv';
+      navigate(`/watch/${route}/${suggestionData.id}`);
+    } else if (searchQuery.trim()) {
+      // If regular search, go to search page
       setQuery(searchQuery.trim());
       navigate('/search');
-      setIsSearchOpen(false);
-      setSearchQuery('');
+    }
+    setIsSearchOpen(false);
+    setSearchQuery('');
+    setSuggestions([]);
+  };
+
+  const handleSearchInput = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSearch(value);
+  };
+
+  // Update the handleKeyDown for suggestion navigation
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedSuggestion(prev => 
+        prev < suggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedSuggestion(prev => prev > -1 ? prev - 1 : -1);
+    } else if (e.key === 'Enter' && selectedSuggestion > -1) {
+      e.preventDefault();
+      const selectedItem = suggestions[selectedSuggestion];
+      handleSearchSubmit(e, selectedItem);
     }
   };
 
@@ -275,7 +347,8 @@ const Navbar = () => {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleSearchInput}
+                    onKeyDown={handleKeyDown}
                     placeholder="Search videos... (Press '/' to focus)"
                     className={`w-full bg-transparent border-none focus:ring-0 text-lg ${
                       isDarkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'
@@ -290,6 +363,47 @@ const Navbar = () => {
                     ESC
                   </kbd>
                 </div>
+
+                {/* Updated Suggestions dropdown */}
+                {(suggestions.length > 0 || isLoading) && (
+                  <div className={`mt-2 py-2 ${
+                    isDarkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'
+                  }`}>
+                    {isLoading ? (
+                      <div className={`px-4 py-2 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        Searching...
+                      </div>
+                    ) : (
+                      suggestions.map((suggestion, index) => (
+                        <div
+                          key={suggestion.id}
+                          onClick={(e) => handleSearchSubmit(e, suggestion)}
+                          className={`px-4 py-2 cursor-pointer ${
+                            index === selectedSuggestion
+                              ? isDarkMode
+                                ? 'bg-gray-800 text-white'
+                                : 'bg-gray-100 text-primary-600'
+                              : isDarkMode
+                                ? 'text-gray-300 hover:bg-gray-800'
+                                : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span>{suggestion.title}</span>
+                            <span className={`text-xs ${
+                              isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                            }`}>
+                              {suggestion.mediaType === 'movie' ? 'Movie' : 'TV Show'}
+                              {suggestion.year ? ` (${suggestion.year})` : ''}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </form>
             </div>
           </div>
