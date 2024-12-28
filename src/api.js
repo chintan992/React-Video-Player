@@ -3,15 +3,15 @@
 const VIDEO_SOURCES = {
   multiembed: {
     name: 'Vidlink',
-    quality: 'HD',
+    quality: 'LESS ADS AUTOPLAY',
   },
   autoembed: {
     name: 'AutoEmbed',
-    quality: 'HD',
+    quality: 'AUTOPLAY',
   },
   '2embed': {
     name: '2Embed',
-    quality: 'HD',
+    quality: 'LESS ADS',
   },
   newMultiembed: {
     name: 'MultiEmbed',
@@ -27,15 +27,23 @@ const VIDEO_SOURCES = {
   },
   vidsrc: {
     name: 'VidSrc',
-    quality: 'HD',
+    quality: 'LESS ADS',
   },
   moviesClub: {
     name: 'MoviesAPI',
-    quality: 'Full HD',
+    quality: 'NOT WORKING',
   },
   notonGo: {
     name: 'NontonGo',
     quality: 'HD',
+  },
+  '111movies': {
+    name: '111Movies',
+    quality: 'HD',
+  },
+  flickyhost: {
+    name: 'FlickyHost',
+    quality: 'HINDI',
   },
 };
 
@@ -89,6 +97,14 @@ const getIframeSrc = (mediaData) => {
       return type === 'series'
         ? `https://www.NontonGo.win/embed/tv/${seriesId}/${season}/${episodeNo}`
         : `https://www.NontonGo.win/embed/movie/${movieId}`;
+    case '111movies':
+      return type === 'series'
+        ? `https://111movies.com/tv/${seriesId}/${season}/${episodeNo}`
+        : `https://111movies.com/movie/${movieId}`;
+    case 'flickyhost':
+      return type === 'series'
+        ? `https://flicky.host/embed/tv/?id=${seriesId}/${season}/${episodeNo}`
+        : `https://flicky.host/embed/movie/?id=${movieId}`;
     default:
       return '';
   }
