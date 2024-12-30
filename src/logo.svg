@@ -1,22 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120">
-  <!-- Light Grey Background -->
-  <rect x="0" y="0" width="240" height="120" fill="#ecf0f1"/>
-
-  <!-- Modern Wavy Lines (3 Parallel, Purple) -->
-  <g fill="none" stroke="#8e44ad" stroke-width="4">
-    <path d="M20,40 C40,60 80,20 120,60 160,100 180,40 220,60" stroke-dasharray="2 4" />
-    <path d="M20,60 C40,80 80,40 120,80 160,120 180,60 220,80" stroke-dasharray="2 4" />
-    <path d="M20,80 C40,100 80,60 120,100 160,140 180,80 220,100" stroke-dasharray="2 4" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <g id="Logo">
+    <g id="Top-Section">
+      <path id="Diagonal-Line" d="M 0, 0 L 200, 200" stroke="#ff0000" stroke-width="5" fill="none" />
+      <path id="Curved-Line" d="M 200, 0 C 150, 50 50, 150 0, 200" stroke="#0000ff" stroke-width="5" fill="none" />
+      <path id="Hexagon" d="M 100, 50 L 150, 50 L 150, 100 L 100, 100 L 100, 150 L 50, 150 L 50, 100 L 100, 100 L 100, 50 Z" stroke="#ff00ff" stroke-width="5" fill="#ff00ff" />
+    </g>
+    <g id="Bottom-Section">
+      <rect id="Square" x="100" y="100" width="50" height="50" rx="10" stroke="#008080" stroke-width="5" fill="#008080" />
+      <path id="Triangle" d="M 150, 150 L 100, 200 L 150, 200 Z" stroke="#008080" stroke-width="5" fill="#008080" />
+      <circle id="Circle" cx="125" cy="175" r="10" stroke="#008080" stroke-width="5" fill="#008080" />
+    </g>
   </g>
-
-  <!-- Small Orange Play Button Icon -->
-  <g transform="translate(110, 70)">
-    <circle cx="0" cy="0" r="10" fill="#ecf0f1" stroke="#8e44ad" stroke-width="2"/>
-    <path d="M-5,-5 L5,0 -5,5" transform="translate(0, 0)" fill="#f39c12"/>
-  </g>
-
-  <!-- Text: "Lets Stream" (Dark Blue-Grey, Open Sans Font) -->
-  <text x="120" y="110" font-family="Open Sans" font-size="18" font-weight="400" fill="#2c3e50" text-anchor="middle">
-    Lets Stream
-  </text>
 </svg>
