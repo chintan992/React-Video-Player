@@ -34,7 +34,8 @@ function Discover() {
     trendingTVShows: []
   });
   const [featuredContent, setFeaturedContent] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeStreamingService, setActiveStreamingService] = useState(null);
@@ -139,7 +140,7 @@ function Discover() {
   }, []);
 
   const fetchData = React.useCallback(async () => {
-    setIsLoading(true);
+    setIsInitialLoading(true);
     try {
       if (!process.env.REACT_APP_TMDB_API_KEY) {
         throw new Error('TMDB API key is not configured. Please check your environment variables.');
@@ -192,12 +193,12 @@ function Discover() {
       console.error('Error fetching data:', error);
       setError(error.message || 'An error occurred while fetching data. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, [fetchFeaturedContent]);
 
   const filterByStreamingService = async (serviceId) => {
-    setIsLoading(true);
+    setIsInitialLoading(true);
     try {
       const cacheKey = `streaming_${serviceId}`;
       const cachedData = getCachedData(cacheKey);
@@ -233,12 +234,13 @@ function Discover() {
       console.error('Error fetching streaming service data:', error);
       setError('An error occurred while fetching streaming service data. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   };
 
   const handleViewMore = async () => {
-    setIsLoading(true);
+    if (isLoadingMore) return; // Prevent multiple simultaneous requests
+    setIsLoadingMore(true);
     const nextPage = page + 1;
     
     try {
@@ -292,7 +294,7 @@ function Discover() {
       console.error('Error fetching more items:', error);
       toast.error('Failed to load more items');
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -309,26 +311,32 @@ function Discover() {
         filteredItems = [...categories.latestMovies, ...categories.trendingMovies]
           .filter((item, index, self) => 
             index === self.findIndex((t) => t.id === item.id)
-          );
+          )
+          .map(item => ({ ...item, media_type: 'movie' })); // Explicitly set media_type
         break;
       case 'tv':
         filteredItems = [...categories.latestTVShows, ...categories.trendingTVShows]
           .filter((item, index, self) => 
             index === self.findIndex((t) => t.id === item.id)
-          );
+          )
+          .map(item => ({ ...item, media_type: 'tv' })); // Explicitly set media_type
         break;
       case 'trending':
         filteredItems = [...categories.trendingMovies, ...categories.trendingTVShows]
           .filter((item, index, self) => 
             index === self.findIndex((t) => t.id === item.id)
-          );
+          )
+          .map(item => ({
+            ...item,
+            media_type: item.first_air_date ? 'tv' : 'movie' // Set based on item properties
+          }));
         break;
       default: // 'all'
         filteredItems = [
-          ...categories.latestMovies,
-          ...categories.trendingMovies,
-          ...categories.latestTVShows,
-          ...categories.trendingTVShows
+          ...categories.latestMovies.map(item => ({ ...item, media_type: 'movie' })),
+          ...categories.trendingMovies.map(item => ({ ...item, media_type: 'movie' })),
+          ...categories.latestTVShows.map(item => ({ ...item, media_type: 'tv' })),
+          ...categories.trendingTVShows.map(item => ({ ...item, media_type: 'tv' }))
         ].filter((item, index, self) => 
           index === self.findIndex((t) => t.id === item.id)
         );
@@ -359,7 +367,7 @@ function Discover() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-gray-900">
         <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
@@ -460,7 +468,7 @@ function Discover() {
 
         {/* Media Grid */}
         <div className="grid gap-3 grid-cols-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-          {isLoading ? (
+          {isInitialLoading ? (
             Array.from({ length: 8 }).map((_, index) => (
               <MediaItemSkeleton key={`skeleton-${index}`} />
             ))
@@ -473,7 +481,11 @@ function Discover() {
                 exit={{ opacity: 0 }}
               >
                 <MediaCard
-                  item={item}
+                  item={{
+                    ...item,
+                    // Ensure media_type is set correctly based on the item type
+                    media_type: item.media_type || (item.first_air_date ? 'tv' : 'movie')
+                  }}
                   onWatchlistToggle={() => handleWatchlistToggle(item)}
                   isInWatchlist={watchlist.some((watchItem) => watchItem.id === item.id)}
                 />
@@ -491,12 +503,12 @@ function Discover() {
           <div className="flex justify-center mt-8 mb-12">
             <button
               onClick={handleViewMore}
-              disabled={isLoading}
+              disabled={isLoadingMore}
               className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
                 transition-colors duration-200 focus:outline-none focus:ring-2 
                 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isLoadingMore ? (
                 <div className="flex items-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Loading...
