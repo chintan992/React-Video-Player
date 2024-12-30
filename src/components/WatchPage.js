@@ -6,6 +6,7 @@ import { getRecommendations } from '../api/tmdbApi';
 import { getStoredVideoSource, setStoredVideoSource, saveTVProgress, getTVProgress } from '../utils/storage';
 import VideoSection from './VideoSection';
 import { VIDEO_SOURCES } from '../api';
+import { useAuth } from '../context/AuthContext'; // Add this import
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -46,6 +47,7 @@ class ErrorBoundary extends React.Component {
 function WatchPage() {
   const { type, id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth(); // Add this line
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -326,9 +328,42 @@ function WatchPage() {
     }
   };
 
-  const handleListItemClick = (item) => {
+  const handleListItemClick = async (item) => {
     setShowUserLists(false); // Close the sidebar
+    
+    // Add to watch history before navigating
+    try {
+      if (!currentUser) return; // Add check for currentUser
+
+      // Create history item with required fields
+      const historyItem = {
+        id: item.id,
+        title: item.title || item.name,
+        media_type: item.media_type,
+        poster_path: item.poster_path,
+        overview: item.overview
+      };
+
+      // For TV shows, add episode info and use it in addToWatchHistory call
+      if (item.media_type === 'tv') {
+        const episodeInfo = {
+          season: '1',
+          episode: '1',
+          name: item.name
+        };
+        await addToWatchHistory({...historyItem}, episodeInfo);
+      } else {
+        await addToWatchHistory({...historyItem});
+      }
+      
+      console.log('Added to watch history from recommendations');
+    } catch (error) {
+      console.error('Error adding to watch history:', error);
+    }
+
+    // Navigate to the new item
     navigate(`/watch/${item.media_type}/${item.id}`);
+    
     // Reload the page if we're already on the same item but with different parameters
     if (item.id === Number(id)) {
       window.location.reload();

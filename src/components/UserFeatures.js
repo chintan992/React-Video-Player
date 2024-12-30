@@ -194,11 +194,33 @@ const UserFeatures = () => {
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
                 {item.title || item.name}
               </h3>
+              
+              {/* Enhanced TV show episode information */}
+              {item.media_type === 'tv' && (
+                <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                  {item.season && item.episode && (
+                    <p>
+                      Season {item.season}, Episode {item.episode}
+                      {item.episodeName && (
+                        <span className="block italic">"{item.episodeName}"</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Watch date information */}
               {item.watchedAt && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                   Watched: {new Date(item.watchedAt.seconds * 1000).toLocaleDateString()}
                 </p>
               )}
+              
+              {/* Content type indicator */}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                {item.media_type === 'movie' ? 'Movie' : 'TV Series'}
+              </p>
+
               {removeFunction && (
                 <button
                   onClick={(e) => {

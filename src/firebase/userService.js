@@ -72,80 +72,114 @@ export const getFavorites = async (userId) => {
 };
 
 // Watch History Functions
-export const addToWatchHistory = async (userId, mediaItem, progress = 0) => {
-  const userRef = doc(db, 'users', userId);
-  const itemWithType = ensureMediaType(mediaItem);
-  const historyItem = {
-    ...itemWithType,
-    watchedAt: new Date(),
-    progress: progress, // Store progress as percentage (0-100)
-    lastPlayedAt: new Date()
-  };
-  
-  // Get current watch history
-  const docSnap = await getDoc(userRef);
-  const currentHistory = docSnap.data()?.watchHistory || [];
-  
-  // Remove any existing entry for this media item
-  const filteredHistory = currentHistory.filter(
-    item => !(item.id === mediaItem.id && item.media_type === mediaItem.media_type)
-  );
-  
-  // Add new history item at the beginning
-  await updateDoc(userRef, {
-    watchHistory: [historyItem, ...filteredHistory]
-  });
-};
+export const addToWatchHistory = async (userId, mediaItem, episodeInfo = null) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const itemWithType = ensureMediaType(mediaItem);
+    
+    // Create a simpler history item structure
+    const historyItem = {
+      id: mediaItem.id,
+      title: mediaItem.title || mediaItem.name,
+      media_type: itemWithType.media_type,
+      poster_path: mediaItem.poster_path,
+      watchedAt: new Date(),
+      overview: mediaItem.overview || '',
+    };
 
-// Update watch progress
-export const updateWatchProgress = async (userId, mediaItem, progress) => {
-  const userRef = doc(db, 'users', userId);
-  const docSnap = await getDoc(userRef);
-  const currentHistory = docSnap.data()?.watchHistory || [];
-  
-  const updatedHistory = currentHistory.map(item => {
-    if (item.id === mediaItem.id && item.media_type === mediaItem.media_type) {
-      return {
-        ...item,
-        progress: progress,
-        lastPlayedAt: new Date()
-      };
+    // Add TV show specific information if available
+    if (episodeInfo && itemWithType.media_type === 'tv') {
+      historyItem.season = episodeInfo.season;
+      historyItem.episode = episodeInfo.episode;
+      historyItem.episodeName = episodeInfo.name;
     }
-    return item;
-  });
-  
-  await updateDoc(userRef, {
-    watchHistory: updatedHistory
-  });
-};
 
-// Get continue watching list (items with progress < 100%)
-export const getContinueWatching = async (userId) => {
-  const userRef = doc(db, 'users', userId);
-  const docSnap = await getDoc(userRef);
-  const history = docSnap.data()?.watchHistory || [];
-  
-  return history
-    .filter(item => (item.progress || 0) < 100) // Only include unwatched or partially watched
-    .sort((a, b) => b.lastPlayedAt - a.lastPlayedAt) // Sort by most recently played
-    .slice(0, 10); // Limit to 10 items
-};
+    console.log('Adding to watch history:', historyItem); // Debug log
 
-export const removeFromWatchHistory = async (userId, historyItem) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    watchHistory: arrayRemove(historyItem)
-  });
+    // Get current history
+    const docSnap = await getDoc(userRef);
+    const currentHistory = docSnap.data()?.watchHistory || [];
+
+    // Remove duplicate entries
+    const filteredHistory = currentHistory.filter(
+      item => item.id !== mediaItem.id || 
+        (item.media_type === 'tv' && 
+         (item.season !== episodeInfo?.season || 
+          item.episode !== episodeInfo?.episode))
+    );
+
+    // Add new item at the beginning
+    const newHistory = [historyItem, ...filteredHistory].slice(0, 100);
+
+    // Update the document
+    await updateDoc(userRef, {
+      watchHistory: newHistory
+    });
+
+    console.log('Watch history updated successfully'); // Debug log
+    return true;
+  } catch (error) {
+    console.error('Error adding to watch history:', error);
+    throw error;
+  }
 };
 
 export const getWatchHistory = async (userId) => {
-  const userRef = doc(db, 'users', userId);
-  const docSnap = await getDoc(userRef);
-  const history = docSnap.data()?.watchHistory || [];
-  return history.map(item => ({
-    ...ensureMediaType(item),
-    watchedAt: item.watchedAt
-  }));
+  try {
+    const userRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(userRef);
+    const history = docSnap.data()?.watchHistory || [];
+    
+    // Ensure all items have required fields
+    return history.map(item => ({
+      ...item,
+      title: item.title || item.name || 'Unknown Title',
+      media_type: item.media_type || 'movie',
+      watchedAt: item.watchedAt || new Date()
+    }));
+  } catch (error) {
+    console.error('Error getting watch history:', error);
+    return [];
+  }
+};
+
+// Add these new exports for watch history management
+export const removeFromWatchHistory = async (userId, historyItem) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const docSnap = await getDoc(userRef);
+    const currentHistory = docSnap.data()?.watchHistory || [];
+    
+    // Filter out the item to remove
+    const newHistory = currentHistory.filter(item => 
+      !(item.id === historyItem.id && 
+        item.media_type === historyItem.media_type &&
+        item.season === historyItem.season &&
+        item.episode === historyItem.episode)
+    );
+    
+    await updateDoc(userRef, {
+      watchHistory: newHistory
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing from watch history:', error);
+    throw error;
+  }
+};
+
+export const clearWatchHistory = async (userId) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      watchHistory: []
+    });
+    return true;
+  } catch (error) {
+    console.error('Error clearing watch history:', error);
+    throw error;
+  }
 };
 
 // Ratings and Reviews Functions
