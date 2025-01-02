@@ -3,6 +3,9 @@
 The **Let's Stream Website** is a feature-rich platform designed to use the Streaming API for video URLs and the TMDB API for movie and series data. The project incorporates a recommendation engine in Python to suggest the next movie or series to watch based on the user's recently played content. The current version implements basic iframe integration for video playback, React for the frontend, and is deployed on Netlify. Future plans include transitioning the frontend to **Cloudflare Pages**, **Netlify**, and **Heroku** and serverless functions to **Cloudflare Workers**, with the recommendation engine potentially moving to Node.js or Python for enhanced scalability.
 
 ---
+# Proxy: 
+##### https://prox992y.chintanr21.workers.dev/
+---
 
 ## Features
 
