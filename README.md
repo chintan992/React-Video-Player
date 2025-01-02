@@ -156,6 +156,7 @@ To set up the project locally, follow these steps:
 ├── .vscode/
 │   └── settings.json
 ├── 85f7f045f99c649f87f9d0baa67c7663.txt
+├── Background.md
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── IMPROVEMENTS.md
@@ -177,23 +178,31 @@ To set up the project locally, follow these steps:
 │   ├── favicon.ico
 │   ├── index.html
 │   ├── manifest.json
+│   ├── offline.html
 │   ├── robots.txt
+│   ├── service-worker.js
 │   ├── site.webmanifest
 │   └── web.config
 ├── src/
 │   ├── App.js
+│   ├── anime/
+│   │   ├── AnimeList.js
+│   │   └── SearchBar.js
 │   ├── api/
 │   │   └── tmdbApi.js
 │   ├── api.js
 │   ├── components/
 │   │   ├── AboutUs.js
 │   │   ├── AdvancedSearchForm.js
+│   │   ├── ApiSelector.js
 │   │   ├── DarkModeContext.js
 │   │   ├── Discover.js
 │   │   ├── ErrorBoundary.js
-│   │   ├── HomePage.js
+│   │   ├── Footer.js
 │   │   ├── LoadingSkeleton.js
+│   │   ├── LoadingSpinner.js
 │   │   ├── Login.js
+│   │   ├── MediaControls.js
 │   │   ├── MediaDetail.js
 │   │   ├── MediaForm.js
 │   │   ├── MediaItem.js
@@ -202,13 +211,16 @@ To set up the project locally, follow these steps:
 │   │   │   ├── ProfileDropdown.js
 │   │   │   └── navConfig.js
 │   │   ├── Navbar.js
+│   │   ├── PrivacyPolicy.js
 │   │   ├── ScrollToTop.js
 │   │   ├── Search.js
 │   │   ├── ShareTargetHandler.js
 │   │   ├── Signup.js
 │   │   ├── SplashScreen.js
 │   │   ├── Support.js
+│   │   ├── TermsOfUse.js
 │   │   ├── UserFeatures.js
+│   │   ├── UserListsSidebar.js
 │   │   ├── VideoSection.js
 │   │   ├── WatchPage.js
 │   │   └── common/
@@ -217,8 +229,6 @@ To set up the project locally, follow these steps:
 │   │       ├── MediaCard.js
 │   │       ├── ScrollToTop.js
 │   │       └── SkeletonLoader.js
-│   ├── config/
-│   ├── constants/
 │   ├── context/
 │   │   ├── AuthContext.js
 │   │   └── SearchContext.js
@@ -239,12 +249,10 @@ To set up the project locally, follow these steps:
 │   ├── setupTests.js
 │   ├── styles/
 │   │   └── colors.css
-│   ├── tests/
 │   └── utils/
-│       └── security.js
+│       ├── security.js
+│       └── storage.js
 └── tailwind.config.js
-
-
 ```
 
 ## Future Goals
