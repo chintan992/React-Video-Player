@@ -15,7 +15,7 @@ import ShareTargetHandler from './components/ShareTargetHandler';
 import Footer from './components/Footer'; // Import Footer
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfUse from './components/TermsOfUse';
-
+import SplashCursor from './background/SplashCursor';
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
 const AboutUs = React.lazy(() => import('./components/AboutUs'));
@@ -62,6 +62,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <SplashCursor />
       <Navbar />
       <main className="min-h-screen pt-16">
         <ScrollToTop />
