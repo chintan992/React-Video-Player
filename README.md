@@ -139,7 +139,7 @@ To set up the project locally, follow these steps:
 
 ## Project Structure 
 ```
-/workspaces/React-Video-Player/
+/React-Video-Player/
 ├── .devcontainer/
 │   └── devcontainer.json
 ├── .env
@@ -159,6 +159,8 @@ To set up the project locally, follow these steps:
 ├── .vscode/
 │   └── settings.json
 ├── 85f7f045f99c649f87f9d0baa67c7663.txt
+├── Asset 1.svg
+├── Asset 1chrome.png
 ├── Background.md
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -166,6 +168,7 @@ To set up the project locally, follow these steps:
 ├── LICENSE
 ├── README.md
 ├── api list.txt
+├── docs/
 ├── image.png
 ├── netlify.toml
 ├─] node_modules/ (ignored)
@@ -188,12 +191,16 @@ To set up the project locally, follow these steps:
 │   └── web.config
 ├── src/
 │   ├── App.js
-│   ├── anime/
-│   │   ├── AnimeList.js
-│   │   └── SearchBar.js
 │   ├── api/
 │   │   └── tmdbApi.js
 │   ├── api.js
+│   ├── background/
+│   │   ├── Hyperspeed.css
+│   │   ├── Hyperspeed.js
+│   │   ├── Hyperspeedpreset.js
+│   │   ├── SplashCursor.js
+│   │   ├── Squares.js
+│   │   └── background.js
 │   ├── components/
 │   │   ├── AboutUs.js
 │   │   ├── AdvancedSearchForm.js
@@ -256,6 +263,7 @@ To set up the project locally, follow these steps:
 │       ├── security.js
 │       └── storage.js
 └── tailwind.config.js
+
 ```
 
 ## Future Goals
