@@ -46,6 +46,7 @@ function Discover() {
   });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isStreamingLoading, setIsStreamingLoading] = useState(false);
 
   // Handle watchlist
   const handleWatchlistToggle = (item) => {
@@ -198,13 +199,13 @@ function Discover() {
   }, [fetchFeaturedContent]);
 
   const filterByStreamingService = async (serviceId) => {
-    setIsInitialLoading(true);
+    setIsStreamingLoading(true);
     try {
       const cacheKey = `streaming_${serviceId}`;
       const cachedData = getCachedData(cacheKey);
       
       if (cachedData) {
-        setCategories(cachedData);
+        setMediaItems(cachedData);
         return;
       }
 
@@ -221,20 +222,18 @@ function Discover() {
         tvShowsResponse.json()
       ]);
 
-      const newCategories = {
-        latestMovies: moviesData.results.slice(0, 10),
-        trendingMovies: [],
-        latestTVShows: tvShowsData.results.slice(0, 10),
-        trendingTVShows: []
-      };
+      const filteredItems = [
+        ...moviesData.results.map(item => ({ ...item, media_type: 'movie' })),
+        ...tvShowsData.results.map(item => ({ ...item, media_type: 'tv' }))
+      ];
 
-      setCachedData(cacheKey, newCategories);
-      setCategories(newCategories);
+      setCachedData(cacheKey, filteredItems);
+      setMediaItems(filteredItems);
     } catch (error) {
       console.error('Error fetching streaming service data:', error);
       setError('An error occurred while fetching streaming service data. Please try again.');
     } finally {
-      setIsInitialLoading(false);
+      setIsStreamingLoading(false);
     }
   };
 
@@ -360,7 +359,7 @@ function Discover() {
     
     if (activeStreamingService === serviceId) {
       setActiveStreamingService(null);
-      fetchData();
+      handleCategoryChange(activeCategory);
     } else {
       setActiveStreamingService(serviceId);
       filterByStreamingService(serviceId);
@@ -468,7 +467,7 @@ function Discover() {
 
         {/* Media Grid */}
         <div className="grid gap-3 grid-cols-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-          {isInitialLoading ? (
+          {isStreamingLoading ? (
             Array.from({ length: 8 }).map((_, index) => (
               <MediaItemSkeleton key={`skeleton-${index}`} />
             ))
