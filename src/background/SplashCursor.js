@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 function SplashCursor({
   // Add whatever props you like for customization
+  isVisible,
   SIM_RESOLUTION = 128,
   DYE_RESOLUTION = 1440,
   CAPTURE_RESOLUTION = 512,
@@ -22,7 +23,7 @@ function SplashCursor({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !isVisible) return;// Only proceed if isVisible is true
 
     function pointerPrototype() {
       this.id = -1;
@@ -1196,12 +1197,15 @@ function SplashCursor({
     COLOR_UPDATE_SPEED,
     BACK_COLOR,
     TRANSPARENT,
+    isVisible, // Add isVisible to dependencies
   ]);
 
   return (
+    isVisible && ( // Conditional rendering based on isVisible
     <div className="fixed top-0 left-0 z-50 pointer-events-none">
       <canvas ref={canvasRef} id="fluid" className="w-screen h-screen" />
     </div>
+    )
   );
 }
 

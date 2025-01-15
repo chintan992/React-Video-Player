@@ -16,6 +16,7 @@ import Footer from './components/Footer'; // Import Footer
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfUse from './components/TermsOfUse';
 import SplashCursor from './background/SplashCursor';
+import Settings from './components/Settings'; // Import the new Settings component
 // Lazy load components
 const Discover = React.lazy(() => import('./components/Discover'));
 const AboutUs = React.lazy(() => import('./components/AboutUs'));
@@ -49,6 +50,7 @@ const LoadingFallback = () => (
 );
 
 function AppContent() {
+  const [isSplashCursorVisible, setIsSplashCursorVisible] = useState(true); // State for SplashCursor visibility
   const { isDarkMode } = useDarkMode();
   
   useEffect(() => {
@@ -62,7 +64,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SplashCursor />
+      <SplashCursor isVisible={isSplashCursorVisible} /> {/* Pass the visibility state to SplashCursor */}
       <Navbar />
       <main className="min-h-screen pt-16">
         <ScrollToTop />
@@ -96,6 +98,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/share-target" element={<ShareTargetHandler />} />
+            <Route path="/settings" element={<Settings onToggleSplashCursor={setIsSplashCursorVisible} />} /> {/* New settings route */}
           </Routes>
         </Suspense>
       </main>

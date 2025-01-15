@@ -5,7 +5,7 @@ import { logout } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { useSearch } from '../context/SearchContext';
 
-import { BsSunFill, BsMoonStarsFill, BsSearch, BsList, BsX, BsPerson, BsBoxArrowRight } from 'react-icons/bs';
+import { BsSunFill, BsMoonStarsFill, BsSearch, BsList, BsX, BsPerson, BsBoxArrowRight, BsGearFill } from 'react-icons/bs';
 // removed BsGearFill
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -286,7 +286,7 @@ const Navbar = () => {
                           <span>Profile</span>
                         </div>
                       </Link>
-                      {/* Settings route temporarily disabled
+                      {/* Settings route temporarily disabled */}
                       <Link
                         to="/settings"
                         className={`block px-4 py-2 text-sm transition-colors duration-200 ${
@@ -298,7 +298,7 @@ const Navbar = () => {
                           <span>Settings</span>
                         </div>
                       </Link>
-                      */}
+                      
                       <button
                         onClick={handleLogout}
                         className={`w-full text-left px-4 py-2 text-sm transition-colors duration-200 ${
