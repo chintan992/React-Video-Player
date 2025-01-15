@@ -31,7 +31,7 @@ const VIDEO_SOURCES = {
   },
   moviesClub: {
     name: 'MoviesAPI',
-    quality: 'NOT WORKING',
+    quality: 'WORKING with ADS',
   },
   notonGo: {
     name: 'NontonGo',
@@ -44,6 +44,10 @@ const VIDEO_SOURCES = {
   flickyhost: {
     name: 'FlickyHost',
     quality: 'HINDI',
+  },
+  vidjoyPro: {
+    name: 'Vidjoy Pro',
+    quality: 'HD LESS ADS',
   },
 };
 
@@ -105,6 +109,10 @@ const getIframeSrc = (mediaData) => {
       return type === 'series'
         ? `https://flicky.host/embed/tv/?id=${seriesId}/${season}/${episodeNo}`
         : `https://flicky.host/embed/movie/?id=${movieId}`;
+    case 'vidjoyPro':
+      return type === 'series'
+        ? `https://vidjoy.pro/embed/tv/${seriesId}/${season}/${episodeNo}`
+        : `https://vidjoy.pro/embed/movie/${movieId}`;
     default:
       return '';
   }
