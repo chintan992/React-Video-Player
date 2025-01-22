@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-
-// Components
-import MediaCard from './common/MediaCard';
-import FeaturedContent from './common/FeaturedContent';
-import { MediaItemSkeleton } from './common/SkeletonLoader';
-import Slider from 'react-slick';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import FeaturedContentCarousel from './FeaturedContentCarousel';
+import Filters from './Filters';
+import MediaGrid from './MediaGrid';
+import ViewMoreButton from './ViewMoreButton';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -25,8 +19,6 @@ const streamingServices = [
 ];
 
 function Discover() {
-  // eslint-disable-next-line
-  const navigate = useNavigate();
   const [categories, setCategories] = useState({
     latestMovies: [],
     trendingMovies: [],
@@ -48,7 +40,6 @@ function Discover() {
   const [hasMore, setHasMore] = useState(true);
   const [isStreamingLoading, setIsStreamingLoading] = useState(false);
 
-  // Handle watchlist
   const handleWatchlistToggle = (item) => {
     setWatchlist(prev => {
       const exists = prev.some(i => i.id === item.id);
@@ -66,7 +57,6 @@ function Discover() {
     });
   };
 
-  // Load watchlist from localStorage on mount
   useEffect(() => {
     const savedWatchlist = localStorage.getItem('watchlist');
     if (savedWatchlist) {
@@ -79,7 +69,6 @@ function Discover() {
     }
   }, []);
 
-  // Carousel settings
   const carouselSettings = {
     dots: true,
     infinite: true,
@@ -96,7 +85,7 @@ function Discover() {
     try {
       const item = localStorage.getItem(key);
       if (!item) return null;
-      
+
       const { data, timestamp } = JSON.parse(item);
       if (Date.now() - timestamp > 5 * 60 * 1000) {
         localStorage.removeItem(key);
@@ -155,7 +144,7 @@ function Discover() {
       };
 
       const newCategories = {};
-      
+
       await Promise.all([
         fetchFeaturedContent(),
         ...Object.entries(endpoints).map(async ([key, url]) => {
@@ -171,7 +160,7 @@ function Discover() {
               const errorData = await response.json();
               throw new Error(errorData.status_message || `Failed to fetch ${key}`);
             }
-            
+
             const data = await response.json();
             const results = data.results.slice(0, 10);
             newCategories[key] = results;
@@ -203,7 +192,7 @@ function Discover() {
     try {
       const cacheKey = `streaming_${serviceId}`;
       const cachedData = getCachedData(cacheKey);
-      
+
       if (cachedData) {
         setMediaItems(cachedData);
         return;
@@ -238,15 +227,14 @@ function Discover() {
   };
 
   const handleViewMore = async () => {
-    if (isLoadingMore) return; // Prevent multiple simultaneous requests
+    if (isLoadingMore) return;
     setIsLoadingMore(true);
     const nextPage = page + 1;
-    
+
     try {
       let endpoint;
       const currentCategory = activeCategory;
-      
-      // Get the correct endpoint based on both category and streaming service
+
       if (activeStreamingService) {
         switch (currentCategory) {
           case 'movies':
@@ -280,9 +268,8 @@ function Discover() {
       if (!data.results || data.results.length === 0) {
         setHasMore(false);
       } else {
-        // Append new items to existing ones
         setMediaItems(prevItems => {
-          const newItems = data.results.filter(newItem => 
+          const newItems = data.results.filter(newItem =>
             !prevItems.some(existingItem => existingItem.id === newItem.id)
           );
           return [...prevItems, ...newItems];
@@ -301,52 +288,51 @@ function Discover() {
     setActiveCategory(category);
     setPage(1);
     setHasMore(true);
-    setMediaItems([]); // Clear existing items when changing category
-    
-    // Filter media items based on category
+    setMediaItems([]);
+
     let filteredItems = [];
     switch (category) {
       case 'movies':
         filteredItems = [...categories.latestMovies, ...categories.trendingMovies]
-          .filter((item, index, self) => 
+          .filter((item, index, self) =>
             index === self.findIndex((t) => t.id === item.id)
           )
-          .map(item => ({ ...item, media_type: 'movie' })); // Explicitly set media_type
+          .map(item => ({ ...item, media_type: 'movie' }));
         break;
       case 'tv':
         filteredItems = [...categories.latestTVShows, ...categories.trendingTVShows]
-          .filter((item, index, self) => 
+          .filter((item, index, self) =>
             index === self.findIndex((t) => t.id === item.id)
           )
-          .map(item => ({ ...item, media_type: 'tv' })); // Explicitly set media_type
+          .map(item => ({ ...item, media_type: 'tv' }));
         break;
       case 'trending':
         filteredItems = [...categories.trendingMovies, ...categories.trendingTVShows]
-          .filter((item, index, self) => 
+          .filter((item, index, self) =>
             index === self.findIndex((t) => t.id === item.id)
           )
           .map(item => ({
             ...item,
-            media_type: item.first_air_date ? 'tv' : 'movie' // Set based on item properties
+            media_type: item.first_air_date ? 'tv' : 'movie'
           }));
         break;
-      default: // 'all'
+      default:
         filteredItems = [
           ...categories.latestMovies.map(item => ({ ...item, media_type: 'movie' })),
           ...categories.trendingMovies.map(item => ({ ...item, media_type: 'movie' })),
           ...categories.latestTVShows.map(item => ({ ...item, media_type: 'tv' })),
           ...categories.trendingTVShows.map(item => ({ ...item, media_type: 'tv' }))
-        ].filter((item, index, self) => 
+        ].filter((item, index, self) =>
           index === self.findIndex((t) => t.id === item.id)
         );
     }
 
     setMediaItems(filteredItems);
-  }, [categories]); // Add categories as dependency
+  }, [categories]);
 
   useEffect(() => {
     handleCategoryChange(activeCategory);
-  }, [activeCategory, handleCategoryChange]); // Remove categories from dependencies since it's included in handleCategoryChange
+  }, [activeCategory, handleCategoryChange]);
 
   useEffect(() => {
     fetchData();
@@ -355,8 +341,8 @@ function Discover() {
   const handleStreamingServiceClick = (serviceId) => {
     setPage(1);
     setHasMore(true);
-    setMediaItems([]); // Clear existing items when changing streaming service
-    
+    setMediaItems([]);
+
     if (activeStreamingService === serviceId) {
       setActiveStreamingService(null);
       handleCategoryChange(activeCategory);
@@ -380,10 +366,10 @@ function Discover() {
         <div className="text-center px-4">
           <h2 className="text-2xl font-bold mb-4">Oops!</h2>
           <p className="mb-6 text-gray-600 dark:text-gray-300">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
-              transition-colors duration-200 focus:outline-none focus:ring-2 
+            className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600
+              transition-colors duration-200 focus:outline-none focus:ring-2
               focus:ring-primary-500 focus:ring-offset-2"
           >
             Try Again
@@ -398,127 +384,32 @@ function Discover() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Featured Content Carousel */}
         {featuredContent && featuredContent.length > 0 && (
-          <section className="mb-12">
-            <Slider {...carouselSettings}>
-              {featuredContent.map((item, index) => (
-                <div key={item.id} className="px-2 sm:px-4">
-                  <FeaturedContent item={item} />
-                </div>
-              ))}
-            </Slider>
-          </section>
+          <FeaturedContentCarousel featuredContent={featuredContent} carouselSettings={carouselSettings} />
         )}
 
         {/* Filters */}
-        <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 mb-8 overflow-x-auto">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            {/* Category Tabs */}
-            <div className="flex space-x-2 overflow-x-auto">
-              <button
-                onClick={() => handleCategoryChange('all')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  activeCategory === 'all'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => handleCategoryChange('movies')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  activeCategory === 'movies'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Movies
-              </button>
-              <button
-                onClick={() => handleCategoryChange('tv')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  activeCategory === 'tv'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                TV Shows
-              </button>
-            </div>
-
-            {/* Streaming Services */}
-            <div className="flex flex-wrap gap-2 overflow-x-auto">
-              {streamingServices.map((service) => (
-                <button
-                  key={service.id}
-                  onClick={() => handleStreamingServiceClick(service.id)}
-                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                    activeStreamingService === service.id
-                      ? service.color + ' text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {service.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Filters
+          activeCategory={activeCategory}
+          handleCategoryChange={handleCategoryChange}
+          streamingServices={streamingServices}
+          activeStreamingService={activeStreamingService}
+          handleStreamingServiceClick={handleStreamingServiceClick}
+        />
 
         {/* Media Grid */}
-        <div className="grid gap-3 grid-cols-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-          {isStreamingLoading ? (
-            Array.from({ length: 8 }).map((_, index) => (
-              <MediaItemSkeleton key={`skeleton-${index}`} />
-            ))
-          ) : mediaItems.length > 0 ? (
-            mediaItems.map((item) => (
-              <motion.div
-                key={`${item.id}-${item.media_type}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                <MediaCard
-                  item={{
-                    ...item,
-                    // Ensure media_type is set correctly based on the item type
-                    media_type: item.media_type || (item.first_air_date ? 'tv' : 'movie')
-                  }}
-                  onWatchlistToggle={() => handleWatchlistToggle(item)}
-                  isInWatchlist={watchlist.some((watchItem) => watchItem.id === item.id)}
-                />
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">No items found</p>
-            </div>
-          )}
-        </div>
+        <MediaGrid
+          mediaItems={mediaItems}
+          isStreamingLoading={isStreamingLoading}
+          watchlist={watchlist}
+          handleWatchlistToggle={handleWatchlistToggle}
+        />
 
-        {/* Replace infinite scroll indicator with View More button */}
-        {hasMore && (
-          <div className="flex justify-center mt-8 mb-12">
-            <button
-              onClick={handleViewMore}
-              disabled={isLoadingMore}
-              className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 
-                transition-colors duration-200 focus:outline-none focus:ring-2 
-                focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoadingMore ? (
-                <div className="flex items-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Loading...
-                </div>
-              ) : (
-                'View More'
-              )}
-            </button>
-          </div>
-        )}
-
+        {/* View More Button */}
+        <ViewMoreButton
+          hasMore={hasMore}
+          handleViewMore={handleViewMore}
+          isLoadingMore={isLoadingMore}
+        />
       </div>
     </div>
   );
