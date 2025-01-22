@@ -8,7 +8,7 @@ const Filters = ({
   handleStreamingServiceClick
 }) => {
   return (
-    <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 mb-8 overflow-x-auto">
+    <div className="sticky top-16 z-10 bg-gray-50 dark:bg-[#000e14] py-4 mb-8 overflow-x-auto">
       <div className="flex flex-wrap gap-4 items-center justify-between">
         {/* Category Tabs */}
         <div className="flex space-x-2 overflow-x-auto">

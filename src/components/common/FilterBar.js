@@ -38,7 +38,7 @@ const FilterBar = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="sticky top-16 z-10 bg-gray-50 dark:bg-gray-900 py-4 space-y-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="sticky top-16 z-10 bg-gray-50 dark:bg-[#000e14] py-4 space-y-4 border-b border-gray-200 dark:border-gray-700">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-gray-700 dark:text-gray-300 p-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"

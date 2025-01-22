@@ -131,7 +131,7 @@ const MediaDetail = ({ item, onClose }) => {
       )}
 
       <div className={`relative rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] overflow-hidden transition-all duration-300 animate-slideUp
-                    ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+                    ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-white text-gray-900'}`}>
         <button 
           className="absolute top-4 right-4 p-2 hover:bg-black/10 rounded-full transition-colors z-10" 
           onClick={onClose}

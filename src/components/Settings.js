@@ -1,3 +1,4 @@
+{/* Featured Content Carousel 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from './DarkModeContext';
 import Hyperspeed from '../background/Hyperspeed';
@@ -47,7 +48,7 @@ const Settings = ({ onToggleSplashCursor }) => {
         <div
           className={`w-full ${
             isDarkMode
-              ? 'bg-gray-900/70 backdrop-blur-sm'
+              ? 'bg-[#000e14]/70 backdrop-blur-sm'
               : 'bg-white/70 backdrop-blur-sm'
           }`}
         >
@@ -95,3 +96,4 @@ const Settings = ({ onToggleSplashCursor }) => {
 };
 
 export default Settings;
+*/}

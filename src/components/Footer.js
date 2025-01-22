@@ -10,7 +10,7 @@ const Footer = () => {
 
   return (
     <footer className="relative z-10 mt-auto backdrop-blur-sm">
-      <div className="bg-gray-100/80 dark:bg-gray-900/80">
+      <div className="bg-gray-100/80 dark:bg-[#000e14]/80">
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Copyright */}

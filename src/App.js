@@ -41,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Loading fallback component
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#000e14]">
     <div className="space-y-4 text-center">
       <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
       <p className="text-gray-600 dark:text-gray-300">Loading...</p>
@@ -63,8 +63,8 @@ function AppContent() {
   }, [isDarkMode]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <SplashCursor isVisible={isSplashCursorVisible} /> {/* Pass the visibility state to SplashCursor */}
+    <div className="min-h-screen bg-gray-50 dark:bg-[#000e14]">
+       {/* Pass the visibility state to SplashCursor <SplashCursor isVisible={isSplashCursorVisible} /> */}
       <Navbar />
       <main className="min-h-screen pt-16">
         <ScrollToTop />
@@ -98,7 +98,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/share-target" element={<ShareTargetHandler />} />
-            <Route path="/settings" element={<Settings onToggleSplashCursor={setIsSplashCursorVisible} />} /> {/* New settings route */}
+            <Route path="/settings" />} /> {/* New settings route element={<Settings onToggleSplashCursor={setIsSplashCursorVisible} */}
           </Routes>
         </Suspense>
       </main>

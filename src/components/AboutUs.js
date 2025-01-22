@@ -63,7 +63,7 @@ const AboutUs = () => {
       <div className="relative z-10 min-h-screen w-full overflow-x-hidden">
         <div className={`w-full ${
           isDarkMode 
-            ? 'bg-gray-900/70 backdrop-blur-sm' 
+            ? 'bg-[#000e14]/70 backdrop-blur-sm' 
             : 'bg-white/70 backdrop-blur-sm'
         }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

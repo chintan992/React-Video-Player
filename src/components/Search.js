@@ -122,7 +122,7 @@ function Search() {
   };
 
   return (
-    <div className={`flex flex-col items-center min-h-screen p-4 md:p-8 transition-all ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+    <div className={`flex flex-col items-center min-h-screen p-4 md:p-8 transition-all ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-100 text-black'}`}>
       <div className="w-full max-w-4xl mb-6 space-y-3">
         <div className="flex gap-3">
           <input

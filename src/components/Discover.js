@@ -354,7 +354,7 @@ function Discover() {
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-[#000e14]">
         <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -362,7 +362,7 @@ function Discover() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+      <div className="min-h-screen flex items-center justify-center pt-16 bg-gray-50 dark:bg-[#000e14] text-gray-900 dark:text-white">
         <div className="text-center px-4">
           <h2 className="text-2xl font-bold mb-4">Oops!</h2>
           <p className="mb-6 text-gray-600 dark:text-gray-300">{error}</p>
@@ -380,7 +380,7 @@ function Discover() {
   }
 
   return (
-    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
+    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-[#000e14] text-gray-900 dark:text-white overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Featured Content Carousel */}
         {featuredContent && featuredContent.length > 0 && (

@@ -102,7 +102,7 @@ const UserFeatures = () => {
 
   if (!currentUser) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-[#000e14] p-4">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Sign In Required</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">Please sign in to access your profile and manage your content.</p>
@@ -119,7 +119,7 @@ const UserFeatures = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#000e14]">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading your content...</p>
@@ -130,7 +130,7 @@ const UserFeatures = () => {
 
   if (error || initError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#000e14] p-4">
         <div className="text-center max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4">Error</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">{error || initError}</p>
@@ -240,7 +240,7 @@ const UserFeatures = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#000e14] p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
