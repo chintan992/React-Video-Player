@@ -326,6 +326,80 @@ function WatchPage() {
     }
   };
 
+  // Add this new function after the handleFavoritesToggle function
+  const handleInputChange = async (e) => {
+    const { name, value } = e.target;
+    
+    // Update mediaData with the new value
+    setMediaData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Reset video ready state
+    setIsVideoReady(false);
+
+    // If changing season, reset episode to 1
+    if (name === 'season') {
+      setMediaData(prev => ({
+        ...prev,
+        episodeNo: '1'
+      }));
+      
+      // Fetch episodes for the new season
+      try {
+        const response = await fetch(
+          `${BASE_URL}/tv/${id}/season/${value}?api_key=${API_KEY}`
+        );
+        const data = await response.json();
+        setEpisodes(data.episodes || []);
+      } catch (error) {
+        console.error('Error fetching episodes:', error);
+      }
+    }
+
+    // Update progress in storage for TV shows
+    if (type === 'tv') {
+      saveTVProgress(id, 
+        name === 'season' ? value : mediaData.season,
+        name === 'episodeNo' ? value : mediaData.episodeNo
+      );
+    }
+
+    // Add to watch history
+    if (item) {
+      addToWatchHistory({
+        ...item,
+        media_type: type,
+        season: name === 'season' ? value : mediaData.season,
+        episode: name === 'episodeNo' ? value : mediaData.episodeNo
+      });
+    }
+
+    // Set video ready after a short delay
+    setTimeout(() => setIsVideoReady(true), 100);
+  };
+
+  // Update the episodes useEffect to use mediaData.season
+  useEffect(() => {
+    if (type === 'tv' && id && mediaData.season) {
+      const fetchEpisodesData = async () => {
+        try {
+          const response = await fetch(
+            `${BASE_URL}/tv/${id}/season/${mediaData.season}?api_key=${API_KEY}`
+          );
+          const data = await response.json();
+          setEpisodes(data.episodes || []);
+          setIsVideoReady(true);
+        } catch (error) {
+          console.error('Error fetching episodes:', error);
+        }
+      };
+
+      fetchEpisodesData();
+    }
+  }, [type, id, mediaData.season]);
+
   if (isLoading) {
     return <Skeleton isDarkMode={isDarkMode} />;
   }
@@ -418,7 +492,7 @@ function WatchPage() {
                   seasons={seasons} 
                   episodes={episodes} 
                   mediaData={mediaData} 
-                  //handleInputChange={(e) => handleInputChange(e, setMediaData, type, id, addToWatchHistory, item, setIsVideoReady)} 
+                  handleInputChange={handleInputChange}
                 />
               )}
 
