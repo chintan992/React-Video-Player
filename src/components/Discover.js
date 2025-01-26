@@ -39,6 +39,7 @@ function Discover() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isStreamingLoading, setIsStreamingLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false); // New state for no results
 
   const handleWatchlistToggle = (item) => {
     setWatchlist(prev => {
@@ -189,6 +190,7 @@ function Discover() {
 
   const filterByStreamingService = async (serviceId) => {
     setIsStreamingLoading(true);
+    setNoResults(false); // Reset no results state
     try {
       const cacheKey = `streaming_${serviceId}`;
       const cachedData = getCachedData(cacheKey);
@@ -211,10 +213,19 @@ function Discover() {
         tvShowsResponse.json()
       ]);
 
+      console.log('Movies Data:', moviesData); // Debugging log
+      console.log('TV Shows Data:', tvShowsData); // Debugging log
+
       const filteredItems = [
         ...moviesData.results.map(item => ({ ...item, media_type: 'movie' })),
         ...tvShowsData.results.map(item => ({ ...item, media_type: 'tv' }))
       ];
+
+      console.log('Filtered Items:', filteredItems); // Debugging log
+
+      if (filteredItems.length === 0) {
+        setNoResults(true); // Set no results state
+      }
 
       setCachedData(cacheKey, filteredItems);
       setMediaItems(filteredItems);
@@ -402,6 +413,7 @@ function Discover() {
           isStreamingLoading={isStreamingLoading}
           watchlist={watchlist}
           handleWatchlistToggle={handleWatchlistToggle}
+          noResults={noResults} // Pass noResults state
         />
 
         {/* View More Button */}
@@ -410,6 +422,13 @@ function Discover() {
           handleViewMore={handleViewMore}
           isLoadingMore={isLoadingMore}
         />
+
+        {/* No Results Message */}
+        {noResults && (
+          <div className="text-center mt-4">
+            <p className="text-gray-600 dark:text-gray-300">No results found for the selected filters.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -505,8 +505,8 @@ function WatchPage() {
         {/* Open user lists button */}
         <button
           onClick={() => setShowUserLists(true)}
-          className="p-4 bg-blue-600 text-white rounded-full shadow-lg
-            hover:bg-blue-700 transition-colors duration-200 z-40 flex items-center gap-2"
+          className="p-4 bg-[#02c39a] text-white rounded-full shadow-lg
+            hover:bg-[#c3022b] transition-colors duration-200 z-40 flex items-center gap-2"
           aria-label="Open user lists"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
