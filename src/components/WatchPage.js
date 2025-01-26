@@ -5,8 +5,18 @@ import { useUserFeatures } from '../hooks/useUserFeatures';
 import { getRecommendations } from '../api/tmdbApi';
 import { getStoredVideoSource, setStoredVideoSource, saveTVProgress, getTVProgress } from '../utils/storage';
 import VideoSection from './VideoSection';
-import { VIDEO_SOURCES } from '../api';
-import { useAuth } from '../context/AuthContext'; // Add this import
+import { useAuth } from '../context/AuthContext';
+//import ErrorBoundary from './ErrorBoundary';
+import SourceSelector from './SourceSelector';
+import Recommendations from './Recommendations';
+import EpisodeSelection from './EpisodeSelection';
+import Favorites from './Favorites';
+import Watchlist from './Watchlist';
+import WatchHistory from './WatchHistory';
+import fetchEpisodes from '../utils/fetchEpisodes';
+import Skeleton from './Skeleton';
+//import SomethingWentWrong from './SomethingWentWrong';
+//import { handleSourceChange, handleInputChange, handleSubmit } from '../utils/cachingFunctions';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -242,62 +252,8 @@ function WatchPage() {
 
   // Update episodes fetching logic with correct dependencies and prevent infinite loops
   useEffect(() => {
-    const fetchEpisodes = async () => {
-      if (type === 'tv' && id && mediaData.season) {
-        try {
-          const response = await fetch(
-            `${BASE_URL}/tv/${id}/season/${mediaData.season}?api_key=${API_KEY}`
-          );
-          const data = await response.json();
-          setEpisodes(data.episodes || []);
-          
-          // Only set episode to 1 if there's no saved episode number and episodes exist
-          if (data.episodes?.length > 0 && !mediaData.episodeNo) {
-            // Use a state updater to ensure we have the latest state
-            setMediaData(prevData => {
-              // Only update if we still don't have an episode number
-              if (!prevData.episodeNo) {
-                setIsVideoReady(false);
-                setTimeout(() => setIsVideoReady(true), 100);
-                return { 
-                  ...prevData, 
-                  episodeNo: '1' 
-                };
-              }
-              return prevData;
-            });
-          }
-        } catch (error) {
-          console.error('Error fetching episodes:', error);
-        }
-      }
-    };
-
-    fetchEpisodes();
-  }, [type, id, mediaData.season, mediaData.episodeNo]); // Include episodeNo in dependencies
-
-  // Update handleInputChange to automatically trigger video play
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setMediaData(prevData => {
-      const newData = { ...prevData, [name]: value };
-      
-      // Save progress for both season and episode changes
-      if (type === 'tv') {
-        saveTVProgress(id, 
-          name === 'season' ? value : newData.season,
-          name === 'episodeNo' ? value : newData.episodeNo
-        );
-        addToWatchHistory({...item, media_type: type});
-      }
-      
-      return newData;
-    });
-
-    // Automatically trigger video load
-    setIsVideoReady(false);
-    setTimeout(() => setIsVideoReady(true), 100);
-  };
+    fetchEpisodes(type, id, mediaData, setMediaData, setEpisodes, setIsVideoReady, BASE_URL, API_KEY);
+  }, [type, id, mediaData]); // Include mediaData in dependencies
 
   // Handle user actions
   const handleWatchlistToggle = async () => {
@@ -316,8 +272,8 @@ function WatchPage() {
     }
   };
 
-  // Update handleSubmit to ensure progress is saved when playing
-  const handleSubmit = (e) => {
+   // Update handleSubmit to ensure progress is saved when playing
+   const handleSubmit = (e) => {
     e.preventDefault();
     setIsVideoReady(true);
     if (item) {
@@ -370,66 +326,8 @@ function WatchPage() {
     }
   };
 
-  const renderSourceSelector = () => (
-    <div className="mb-4">
-      <div className="relative">
-        <button
-          onClick={() => setShowSourceMenu(!showSourceMenu)}
-          className="w-full bg-white dark:bg-gray-800 px-4 py-2 rounded-lg flex items-center justify-between shadow-sm border border-gray-200 dark:border-gray-700"
-        >
-          <span className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            {VIDEO_SOURCES[videoSource].name}
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              ({VIDEO_SOURCES[videoSource].quality})
-            </span>
-          </span>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        {showSourceMenu && (
-          <>
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-              onClick={() => setShowSourceMenu(false)}
-            />
-            <div className="absolute mt-2 w-full rounded-lg bg-white dark:bg-gray-800 shadow-lg z-50">
-              {Object.entries(VIDEO_SOURCES).map(([key, { name, quality }]) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    handleSourceChange(key);
-                    setShowSourceMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex justify-between items-center"
-                >
-                  <span>{name}</span>
-                  <span className="text-xs text-gray-500">{quality}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
   if (isLoading) {
-    return (
-      <div className={`flex items-center justify-center min-h-screen ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-50 text-black'}`}>
-        <div className="flex flex-col items-center space-y-4 p-8 rounded-lg bg-opacity-50 backdrop-blur-sm">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="flex flex-col items-center">
-            <p className="text-xl font-medium">Loading content</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Please wait a moment...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Skeleton isDarkMode={isDarkMode} />;
   }
 
   if (error) {
@@ -482,105 +380,9 @@ function WatchPage() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Watch History */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Watch History</h3>
-            <div className="space-y-2">
-              {watchHistory?.length > 0 ? (
-                watchHistory.map((item) => (
-                  <div
-                    key={`${item.id}-${item.watchedAt?.seconds}`}
-                    onClick={() => handleListItemClick(item)}
-                    className="flex items-center p-2 rounded-lg cursor-pointer
-                      hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    <img
-                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                      alt={item.title || item.name}
-                      className="w-12 h-16 object-cover rounded"
-                    />
-                    <div className="ml-3 flex-1">
-                      <p className="font-medium text-gray-800 dark:text-white line-clamp-2">
-                        {item.title || item.name}
-                      </p>
-                      <div className="flex flex-col text-sm text-gray-500 dark:text-gray-400">
-                        <span>{item.media_type === 'movie' ? 'Movie' : 'TV Series'}</span>
-                        <span>Watched: {new Date(item.watchedAt?.seconds * 1000).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">No watch history</p>
-              )}
-            </div>
-          </div>
-
-          {/* Watchlist */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Watchlist</h3>
-            <div className="space-y-2">
-              {watchlist?.length > 0 ? (
-                watchlist.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleListItemClick(item)}
-                    className="flex items-center p-2 rounded-lg cursor-pointer
-                      hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    <img
-                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                      alt={item.title || item.name}
-                      className="w-12 h-16 object-cover rounded"
-                    />
-                    <div className="ml-3 flex-1">
-                      <p className="font-medium text-gray-800 dark:text-white line-clamp-2">
-                        {item.title || item.name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.media_type === 'movie' ? 'Movie' : 'TV Series'}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">No items in watchlist</p>
-              )}
-            </div>
-          </div>
-
-          {/* Favorites */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Favorites</h3>
-            <div className="space-y-2">
-              {favorites?.length > 0 ? (
-                favorites.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleListItemClick(item)}
-                    className="flex items-center p-2 rounded-lg cursor-pointer
-                      hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    <img
-                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                      alt={item.title || item.name}
-                      className="w-12 h-16 object-cover rounded"
-                    />
-                    <div className="ml-3 flex-1">
-                      <p className="font-medium text-gray-800 dark:text-white line-clamp-2">
-                        {item.title || item.name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.media_type === 'movie' ? 'Movie' : 'TV Series'}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">No favorite items</p>
-              )}
-            </div>
-          </div>
+          <WatchHistory watchHistory={watchHistory} handleListItemClick={handleListItemClick} />
+          <Watchlist watchlist={watchlist} handleListItemClick={handleListItemClick} />
+          <Favorites favorites={favorites} handleListItemClick={handleListItemClick} />
         </div>
       </div>
     </div>
@@ -592,13 +394,18 @@ function WatchPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              {renderSourceSelector()}
+              <SourceSelector 
+                videoSource={videoSource} 
+                handleSourceChange={(source) => handleSourceChange(source, setVideoSource, setIsVideoReady)} 
+                showSourceMenu={showSourceMenu} 
+                setShowSourceMenu={setShowSourceMenu} 
+              />
               <div className="relative">
                 <VideoSection
                   ref={videoSectionRef}
                   mediaData={{ ...mediaData, apiType: videoSource }}
                   isVideoReady={isVideoReady}
-                  onSubmit={handleSubmit}
+                  onSubmit={(e) => handleSubmit(e, item, type, addToWatchHistory, saveTVProgress, id, mediaData)}
                   iframeRef={iframeRef}
                   allowFullscreen={true}
                   onSourceChange={handleSourceChange}
@@ -607,52 +414,12 @@ function WatchPage() {
               
               {/* Season and Episode Selection for TV Shows */}
               {type === 'tv' && (
-                <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                  <h2 className="text-lg font-semibold mb-4">Episode Selection</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="season" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                        Season
-                      </label>
-                      <select 
-                        id="season" 
-                        name="season" 
-                        value={mediaData.season} 
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-offset-2 
-                          bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 
-                          text-gray-900 dark:text-white focus:ring-blue-500"
-                      >
-                        {seasons.map(season => (
-                          <option key={season.season_number} value={season.season_number}>
-                            {season.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="episodeNo" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                        Episode
-                      </label>
-                      <select 
-                        id="episodeNo" 
-                        name="episodeNo" 
-                        value={mediaData.episodeNo} 
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-offset-2 
-                          bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 
-                          text-gray-900 dark:text-white focus:ring-blue-500"
-                      >
-                        {episodes.map(episode => (
-                          <option key={episode.episode_number} value={episode.episode_number}>
-                            {episode.name || `Episode ${episode.episode_number}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
+                <EpisodeSelection 
+                  seasons={seasons} 
+                  episodes={episodes} 
+                  mediaData={mediaData} 
+                  //handleInputChange={(e) => handleInputChange(e, setMediaData, type, id, addToWatchHistory, item, setIsVideoReady)} 
+                />
               )}
 
               {item && (
@@ -723,31 +490,10 @@ function WatchPage() {
 
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                  <h2 className="text-xl font-bold mb-4">Recommendations</h2>
-                  <div className="space-y-4">
-                    {recommendations.slice(0, 5).map((rec) => (
-                      <div
-                        key={rec.id}
-                        onClick={() => handleListItemClick(rec)}
-                        className="flex items-center space-x-3 p-2 rounded-lg cursor-pointer
-                          hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                      >
-                        <img
-                          src={`https://image.tmdb.org/t/p/w92${rec.poster_path}`}
-                          alt={rec.title || rec.name}
-                          className="w-16 h-20 object-cover rounded"
-                        />
-                        <div>
-                          <h3 className="font-medium line-clamp-2">{rec.title || rec.name}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Rating: {rec.vote_average.toFixed(1)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <Recommendations 
+                  recommendations={recommendations} 
+                  handleListItemClick={handleListItemClick} 
+                />
               </div>
             </div>
           </div>
