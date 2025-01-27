@@ -15,7 +15,7 @@ import fetchEpisodes from '../utils/fetchEpisodes';
 import Skeleton from './Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tab } from '@headlessui/react';
-import { List, Heart } from 'react-feather';
+import { List, Heart, Star, User } from 'react-feather';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -81,6 +81,19 @@ function WatchPage() {
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const contentRef = useRef(null);
+  const [cast, setCast] = useState([]);
+  const [crew, setCrew] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [similar, setSimilar] = useState([]);
+
+  // Add this new style object at the top of the component
+  const buttonClasses = {
+    base: `flex items-center gap-2 p-4 rounded-full shadow-lg transition-all duration-300
+      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#02c39a] relative z-[60]`,
+    default: `bg-[#02c39a] text-white hover:bg-[#00a896] transform hover:scale-105
+      hover:shadow-xl active:scale-95`,
+    active: `bg-[#c3022b] text-white hover:bg-[#a80016]`
+  };
 
   const handleSourceChange = (source) => {
     setVideoSource(source);
@@ -413,6 +426,45 @@ function WatchPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Add this effect to fetch cast, crew, and reviews
+  useEffect(() => {
+    const fetchAdditionalData = async () => {
+      if (!type || !id) return;
+      
+      try {
+        // Fetch credits (cast & crew)
+        const creditsResponse = await fetch(
+          `${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`
+        );
+        const creditsData = await creditsResponse.json();
+        setCast(creditsData.cast?.slice(0, 20) || []);
+        setCrew(creditsData.crew?.slice(0, 20) || []);
+
+        // Fetch reviews
+        const reviewsResponse = await fetch(
+          `${BASE_URL}/${type}/${id}/reviews?api_key=${API_KEY}`
+        );
+        const reviewsData = await reviewsResponse.json();
+        setReviews(reviewsData.results || []);
+
+        // Fetch similar content
+        const similarResponse = await fetch(
+          `${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`
+        );
+        const similarData = await similarResponse.json();
+        const similarWithType = similarData.results?.slice(0, 12).map(item => ({
+          ...item,
+          media_type: type // Add the same media_type as the current content
+        })) || [];
+        setSimilar(similarWithType);
+      } catch (error) {
+        console.error('Error fetching additional data:', error);
+      }
+    };
+
+    fetchAdditionalData();
+  }, [type, id]);
+
   if (isLoading) {
     return <Skeleton isDarkMode={isDarkMode} />;
   }
@@ -445,10 +497,12 @@ function WatchPage() {
   }
 
   const renderUserListsSidebar = () => (
-    <div 
+    <motion.div 
+      initial={{ x: '100%' }}
+      animate={{ x: showUserLists ? 0 : '100%' }}
+      transition={{ type: 'spring', damping: 20 }}
       className={`fixed right-0 top-0 h-full w-80 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} 
-        shadow-lg transform transition-all duration-300 ease-in-out ${showUserLists ? 'translate-x-0' : 'translate-x-full'} 
-        z-50 overflow-hidden`}
+        shadow-lg z-[70] overflow-hidden`}
     >
       <div className="h-full flex flex-col">
         <div className="p-4 border-b dark:border-gray-700">
@@ -472,7 +526,7 @@ function WatchPage() {
           <Favorites favorites={favorites} handleListItemClick={handleListItemClick} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   // Replace the content section with tabbed interface
@@ -534,12 +588,152 @@ function WatchPage() {
             </div>
           </motion.div>
         </Tab.Panel>
-        {/* ...Add other tab panels... */}
+        <Tab.Panel>
+          <div className="space-y-6">
+            {/* Cast Section */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Cast</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {cast.map((person) => (
+                  <motion.div
+                    key={person.id}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-md"
+                  >
+                    {person.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                        alt={person.name}
+                        className="w-full h-40 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-40 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                        <User className="w-12 h-12 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="p-2 text-center">
+                      <p className="font-medium text-sm">{person.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{person.character}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Crew Section */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Crew</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {crew.map((person) => (
+                  <motion.div
+                    key={`${person.id}-${person.job}`}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-md"
+                  >
+                    {person.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                        alt={person.name}
+                        className="w-full h-40 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-40 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                        <User className="w-12 h-12 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="p-2 text-center">
+                      <p className="font-medium text-sm">{person.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{person.job}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Tab.Panel>
+
+        <Tab.Panel>
+          <div className="space-y-6">
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <motion.div
+                  key={review.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-md"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                        <User className="w-6 h-6 text-gray-400" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold">{review.author}</h4>
+                        {review.author_details?.rating && (
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                            <span>{review.author_details.rating}/10</span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                        {review.content.length > 300
+                          ? `${review.content.slice(0, 300)}...`
+                          : review.content}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                No reviews available yet.
+              </div>
+            )}
+          </div>
+        </Tab.Panel>
+
+        <Tab.Panel>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {similar.map((item) => (
+              <motion.div
+                key={item.id}
+                whileHover={{ scale: 1.05 }}
+                className="cursor-pointer"
+                onClick={() => handleListItemClick(item)}
+              >
+                <div className="relative rounded-lg overflow-hidden">
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                    alt={item.title || item.name}
+                    className="w-full h-auto"
+                    onError={(e) => {
+                      e.target.src = '/path-to-fallback-image.jpg'; // Add a fallback image
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 p-3">
+                      <h4 className="text-white font-semibold">{item.title || item.name}</h4>
+                      <p className="text-gray-200 text-sm">
+                        {new Date(item.release_date || item.first_air_date).getFullYear()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Tab.Panel>
       </Tab.Panels>
     </Tab.Group>
   );
 
-  // Floating quick actions
+  // Update the renderQuickActions function with improved button styling
   const renderQuickActions = () => (
     <AnimatePresence>
       {showQuickActions && (
@@ -551,21 +745,36 @@ function WatchPage() {
             bg-white dark:bg-gray-800 rounded-full shadow-lg px-6 py-3
             flex items-center space-x-4 z-50"
         >
-          <button
+          <motion.button
             onClick={handleWatchlistToggle}
-            className="quick-action-button"
-            aria-label="Add to list"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className={`p-2 rounded-full transition-colors duration-200
+              ${isInWatchlist 
+                ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
           >
-            <List className="w-5 h-5" />
-          </button>
-          <button
+            <List 
+              className={`w-5 h-5 ${isInWatchlist ? 'fill-current' : ''}`}
+              data-active={isInWatchlist}
+            />
+          </motion.button>
+          <motion.button
             onClick={handleFavoritesToggle}
-            className="quick-action-button"
-            aria-label="Add to favorites"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className={`p-2 rounded-full transition-colors duration-200
+              ${isInFavorites 
+                ? 'bg-red-500 text-white hover:bg-red-600' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            aria-label={isInFavorites ? "Remove from favorites" : "Add to favorites"}
           >
-            <Heart className="w-5 h-5" />
-          </button>
-          {/* ...Add other quick actions... */}
+            <Heart 
+              className={`w-5 h-5 ${isInFavorites ? 'fill-current' : ''}`}
+              data-active={isInFavorites}
+            />
+          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>
@@ -679,16 +888,48 @@ function WatchPage() {
         {renderQuickActions()}
         
         {/* User Lists Sidebar and Button */}
-        <div className="fixed bottom-6 left-6 space-y-4">
-          {/* ...existing sidebar button... */}
+        <div className="fixed bottom-6 left-6 z-[60]">
+          <motion.button
+            onClick={() => setShowUserLists(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`${buttonClasses.base} ${showUserLists ? buttonClasses.active : buttonClasses.default}
+              group relative`}
+            aria-label="Open user lists"
+          >
+            <div className="relative flex items-center">
+              <motion.svg 
+                animate={{ rotate: showUserLists ? 90 : 0 }}
+                className="w-6 h-6"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M4 6h16M4 12h16M4 18h16" />
+              </motion.svg>
+              <span className="hidden sm:inline ml-2 whitespace-nowrap">
+                My Lists
+              </span>
+            </div>
+          </motion.button>
         </div>
+
+        {/* Update overlay with proper z-index */}
+        <AnimatePresence>
+          {showUserLists && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 z-[65]"
+              onClick={() => setShowUserLists(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Render sidebar */}
         {renderUserListsSidebar()}
-        {showUserLists && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setShowUserLists(false)}
-          />
-        )}
       </ErrorBoundary>
     </div>
   );
