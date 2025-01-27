@@ -6,17 +6,16 @@ import { getRecommendations } from '../api/tmdbApi';
 import { getStoredVideoSource, setStoredVideoSource, saveTVProgress, getTVProgress } from '../utils/storage';
 import VideoSection from './VideoSection';
 import { useAuth } from '../context/AuthContext';
-//import ErrorBoundary from './ErrorBoundary';
 import SourceSelector from './SourceSelector';
 import Recommendations from './Recommendations';
-import EpisodeSelection from './EpisodeSelection';
 import Favorites from './Favorites';
 import Watchlist from './Watchlist';
 import WatchHistory from './WatchHistory';
 import fetchEpisodes from '../utils/fetchEpisodes';
 import Skeleton from './Skeleton';
-//import SomethingWentWrong from './SomethingWentWrong';
-//import { handleSourceChange, handleInputChange, handleSubmit } from '../utils/cachingFunctions';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tab } from '@headlessui/react';
+import { List, Heart } from 'react-feather';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -80,6 +79,8 @@ function WatchPage() {
   const iframeRef = useRef(null);
   const [videoSource, setVideoSource] = useState(() => getStoredVideoSource() || 'multiembed');
   const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const contentRef = useRef(null);
 
   const handleSourceChange = (source) => {
     setVideoSource(source);
@@ -400,6 +401,18 @@ function WatchPage() {
     }
   }, [type, id, mediaData.season]);
 
+  // Track scroll position for quick actions
+  useEffect(() => {
+    const handleScroll = () => {
+      if (contentRef.current) {
+        const scrollPosition = window.scrollY;
+        setShowQuickActions(scrollPosition > 200);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (isLoading) {
     return <Skeleton isDarkMode={isDarkMode} />;
   }
@@ -462,106 +475,195 @@ function WatchPage() {
     </div>
   );
 
+  // Replace the content section with tabbed interface
+  const renderContentTabs = () => (
+    <Tab.Group>
+      <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-gray-800 p-1">
+        {['Overview', 'Cast & Crew', 'Reviews', 'Similar'].map((tab) => (
+          <Tab
+            key={tab}
+            className={({ selected }) =>
+              `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+              ${selected 
+                ? 'bg-white dark:bg-gray-700 shadow text-blue-600 dark:text-blue-400'
+                : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`
+            }
+          >
+            {tab}
+          </Tab>
+        ))}
+      </Tab.List>
+      <Tab.Panels className="mt-4">
+        <Tab.Panel>
+          {/* Overview content */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="prose dark:prose-invert max-w-none"
+          >
+            <div className="relative">
+              <p className="text-gray-600 dark:text-gray-300">
+                {showFullOverview 
+                  ? detailedOverview 
+                  : (detailedOverview?.length > 300 
+                      ? `${detailedOverview.slice(0, 300)}...` 
+                      : detailedOverview)}
+              </p>
+              {detailedOverview?.length > 300 && (
+                <button
+                  onClick={() => setShowFullOverview(!showFullOverview)}
+                  className="mt-2 text-blue-500 hover:text-blue-600 dark:text-blue-400 
+                    dark:hover:text-blue-300 font-medium transition-colors duration-200"
+                >
+                  {showFullOverview ? 'Show Less' : 'Read More'}
+                </button>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {item?.genres?.map((genre) => (
+                <motion.span
+                  key={genre.id}
+                  whileHover={{ scale: 1.05 }}
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm
+                    cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title={`View more ${genre.name} content`}
+                >
+                  {genre.name}
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
+        </Tab.Panel>
+        {/* ...Add other tab panels... */}
+      </Tab.Panels>
+    </Tab.Group>
+  );
+
+  // Floating quick actions
+  const renderQuickActions = () => (
+    <AnimatePresence>
+      {showQuickActions && (
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 50, opacity: 0 }}
+          className="fixed bottom-20 left-1/2 transform -translate-x-1/2 
+            bg-white dark:bg-gray-800 rounded-full shadow-lg px-6 py-3
+            flex items-center space-x-4 z-50"
+        >
+          <button
+            onClick={handleWatchlistToggle}
+            className="quick-action-button"
+            aria-label="Add to list"
+          >
+            <List className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleFavoritesToggle}
+            className="quick-action-button"
+            aria-label="Add to favorites"
+          >
+            <Heart className="w-5 h-5" />
+          </button>
+          {/* ...Add other quick actions... */}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Enhanced season/episode selection for TV shows
+  const renderEpisodeGrid = () => (
+    type === 'tv' && (
+      <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        {/* Add season selector */}
+        <div className="mb-4">
+          <select
+            value={mediaData.season}
+            onChange={(e) => handleInputChange({
+              target: { name: 'season', value: e.target.value }
+            })}
+            className="w-full md:w-auto px-4 py-2 rounded-lg border dark:bg-gray-700 
+              dark:border-gray-600 dark:text-white"
+          >
+            {seasons.map((season) => (
+              <option key={season.season_number} value={season.season_number}>
+                Season {season.season_number}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Existing episode grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {episodes.map((episode) => (
+            <motion.div
+              key={episode.id}
+              whileHover={{ scale: 1.02 }}
+              className="relative rounded-lg overflow-hidden cursor-pointer"
+              onClick={() => handleInputChange({
+                target: { name: 'episodeNo', value: episode.episode_number.toString() }
+              })}
+            >
+              {/* Episode card content */}
+              <div className="relative aspect-video">
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${episode.still_path}`}
+                  alt={episode.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              </div>
+              <div className="absolute bottom-0 p-3 text-white">
+                <h4 className="font-semibold">{episode.name}</h4>
+                <p className="text-sm opacity-90">Episode {episode.episode_number}</p>
+              </div>
+              {/* Episode progress indicator */}
+              <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-green-500" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )
+  );
+
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-50 text-black'}`}>
       <ErrorBoundary>
-        <div className="container mx-auto px-4 py-6">
+        <div ref={contentRef} className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <SourceSelector 
                 videoSource={videoSource} 
-                handleSourceChange={(source) => handleSourceChange(source, setVideoSource, setIsVideoReady)} 
+                handleSourceChange={handleSourceChange}
                 showSourceMenu={showSourceMenu} 
                 setShowSourceMenu={setShowSourceMenu} 
               />
+              
+              {/* Video Section */}
               <div className="relative">
                 <VideoSection
                   ref={videoSectionRef}
                   mediaData={{ ...mediaData, apiType: videoSource }}
                   isVideoReady={isVideoReady}
-                  onSubmit={(e) => handleSubmit(e, item, type, addToWatchHistory, saveTVProgress, id, mediaData)}
+                  onSubmit={handleSubmit}
                   iframeRef={iframeRef}
                   allowFullscreen={true}
                   onSourceChange={handleSourceChange}
                 />
               </div>
-              
-              {/* Season and Episode Selection for TV Shows */}
-              {type === 'tv' && (
-                <EpisodeSelection 
-                  seasons={seasons} 
-                  episodes={episodes} 
-                  mediaData={mediaData} 
-                  handleInputChange={handleInputChange}
-                />
-              )}
 
+              {/* Tabbed Content Interface */}
               {item && (
                 <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h1 className="text-2xl font-bold">{item.title || item.name}</h1>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={handleWatchlistToggle}
-                        className={`p-2 rounded-full transition-colors duration-200
-                          ${isInWatchlist 
-                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                        aria-label={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-                      >
-                        <svg className="w-6 h-6" fill={isInWatchlist ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={handleFavoritesToggle}
-                        className={`p-2 rounded-full transition-colors duration-200
-                          ${isInFavorites 
-                            ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                        aria-label={isInFavorites ? 'Remove from favorites' : 'Add to favorites'}
-                      >
-                        <svg className="w-6 h-6" fill={isInFavorites ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="prose dark:prose-invert max-w-none">
-                    <div className="relative">
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {showFullOverview 
-                          ? detailedOverview 
-                          : (detailedOverview?.length > 300 
-                              ? `${detailedOverview.slice(0, 300)}...` 
-                              : detailedOverview)}
-                      </p>
-                      {detailedOverview?.length > 300 && (
-                        <button
-                          onClick={() => setShowFullOverview(!showFullOverview)}
-                          className="mt-2 text-blue-500 hover:text-blue-600 dark:text-blue-400 
-                            dark:hover:text-blue-300 font-medium transition-colors duration-200"
-                        >
-                          {showFullOverview ? 'Show Less' : 'Read More'}
-                        </button>
-                      )}
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {item.genres?.map((genre) => (
-                        <span
-                          key={genre.id}
-                          className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm"
-                        >
-                          {genre.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  {renderContentTabs()}
                 </div>
               )}
+
+              {/* Enhanced Episode Grid for TV Shows */}
+              {type === 'tv' && renderEpisodeGrid()}
             </div>
 
+            {/* Recommendations Section */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
                 <Recommendations 
@@ -572,34 +674,22 @@ function WatchPage() {
             </div>
           </div>
         </div>
+
+        {/* Quick Actions */}
+        {renderQuickActions()}
+        
+        {/* User Lists Sidebar and Button */}
+        <div className="fixed bottom-6 left-6 space-y-4">
+          {/* ...existing sidebar button... */}
+        </div>
+        {renderUserListsSidebar()}
+        {showUserLists && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowUserLists(false)}
+          />
+        )}
       </ErrorBoundary>
-
-      {/* Floating action buttons */}
-      <div className="fixed bottom-6 left-6 space-y-4">
-        {/* Open user lists button */}
-        <button
-          onClick={() => setShowUserLists(true)}
-          className="p-4 bg-[#02c39a] text-white rounded-full shadow-lg
-            hover:bg-[#c3022b] transition-colors duration-200 z-40 flex items-center gap-2"
-          aria-label="Open user lists"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <span className="hidden sm:inline">My Lists</span>
-        </button>
-      </div>
-
-      {/* User lists sidebar */}
-      {renderUserListsSidebar()}
-
-      {/* Overlay when sidebar is open */}
-      {showUserLists && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setShowUserLists(false)}
-        />
-      )}
     </div>
   );
 }
