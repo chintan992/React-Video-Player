@@ -8,14 +8,15 @@ import VideoSection from './VideoSection';
 import { useAuth } from '../context/AuthContext';
 import SourceSelector from './SourceSelector';
 import Recommendations from './Recommendations';
-import Favorites from './Favorites';
-import Watchlist from './Watchlist';
-import WatchHistory from './WatchHistory';
+//import Favorites from './Favorites';
+//import Watchlist from './Watchlist';
+//import WatchHistory from './WatchHistory';
 import fetchEpisodes from '../utils/fetchEpisodes';
 import Skeleton from './Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tab } from '@headlessui/react';
 import { List, Heart, Star, User } from 'react-feather';
+import UserListsBottomSheet from './UserListsBottomSheet';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -496,39 +497,6 @@ function WatchPage() {
     );
   }
 
-  const renderUserListsSidebar = () => (
-    <motion.div 
-      initial={{ x: '100%' }}
-      animate={{ x: showUserLists ? 0 : '100%' }}
-      transition={{ type: 'spring', damping: 20 }}
-      className={`fixed right-0 top-0 h-full w-80 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} 
-        shadow-lg z-[70] overflow-hidden`}
-    >
-      <div className="h-full flex flex-col">
-        <div className="p-4 border-b dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">My Lists</h2>
-            <button 
-              onClick={() => setShowUserLists(false)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-              aria-label="Close sidebar"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          <WatchHistory watchHistory={watchHistory} handleListItemClick={handleListItemClick} />
-          <Watchlist watchlist={watchlist} handleListItemClick={handleListItemClick} />
-          <Favorites favorites={favorites} handleListItemClick={handleListItemClick} />
-        </div>
-      </div>
-    </motion.div>
-  );
-
   // Replace the content section with tabbed interface
   const renderContentTabs = () => (
     <Tab.Group>
@@ -839,7 +807,7 @@ function WatchPage() {
     <div className={`min-h-screen ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-50 text-black'}`}>
       <ErrorBoundary>
         <div ref={contentRef} className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mobile:grid-cols-1">
             <div className="lg:col-span-2">
               <SourceSelector 
                 videoSource={videoSource} 
@@ -929,7 +897,16 @@ function WatchPage() {
         </AnimatePresence>
 
         {/* Render sidebar */}
-        {renderUserListsSidebar()}
+        {/* Render sidebar */}
+        {/* {renderUserListsSidebar()} */}
+        <UserListsBottomSheet 
+          showUserLists={showUserLists} 
+          setShowUserLists={setShowUserLists}
+          watchHistory={watchHistory}
+          watchlist={watchlist}
+          favorites={favorites}
+          handleListItemClick={handleListItemClick}
+        />
       </ErrorBoundary>
     </div>
   );
