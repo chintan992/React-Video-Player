@@ -49,6 +49,18 @@ const VIDEO_SOURCES = {
     name: 'Vidjoy Pro',
     quality: 'HD LESS ADS',
   },
+  embedSU: {
+    name: 'EmbedSU',
+    quality: 'HD',
+  },
+  primeWire: {
+    name: 'PrimeWire',
+    quality: 'HD',
+  },
+  smashyStream: {
+    name: 'SmashyStream',
+    quality: 'HD',
+  },
 };
 
 const getIframeSrc = (mediaData) => {
@@ -113,6 +125,18 @@ const getIframeSrc = (mediaData) => {
       return type === 'series'
         ? `https://vidjoy.pro/embed/tv/${seriesId}/${season}/${episodeNo}`
         : `https://vidjoy.pro/embed/movie/${movieId}`;
+    case 'embedSU':
+      return type === 'series'
+        ? `https://embed.su/embed/tv/${seriesId}/${season}/${episodeNo}`
+        : `https://embed.su/embed/movie/${movieId}`;
+    case 'primeWire':
+      return type === 'series'
+        ? `https://www.primewire.tf/embed/tv?tmdb=${seriesId}&season=${season}&episode=${episodeNo}`
+        : `https://www.primewire.tf/embed/movie?tmdb=${movieId}`;
+    case 'smashyStream':
+      return type === 'series'
+        ? `https://embed.smashystream.com/playere.php?tmdb=${seriesId}&season=${season}&episode=${episodeNo}`
+        : `https://embed.smashystream.com/playere.php?tmdb=${movieId}`;
     default:
       return '';
   }
