@@ -192,10 +192,10 @@ const Navbar = () => {
             <Link 
               to="/" 
               className={`text-2xl font-bold transition-all duration-200 hover:scale-105 ${
-                isDarkMode ? 'text-white hover:text-[#02c39a]' : 'text-primary-600 hover:text-[#02c39a]'
+                isDarkMode ? 'text-[#02c39a] hover:text-[#02c39a]' : 'text-primary-600 hover:text-[#02c39a]'
               }`}
             >
-              LetsStream
+              Let's Stream
             </Link>
 
             {/* Desktop Navigation */}
