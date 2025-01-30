@@ -16,7 +16,7 @@ import Skeleton from './Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tab } from '@headlessui/react';
 import { List, Heart, Star, User } from 'react-feather';
-import UserListsBottomSheet from './UserListsBottomSheet';
+import UserListsSidebar from './UserListsSidebar';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
@@ -751,7 +751,7 @@ function WatchPage() {
   // Enhanced season/episode selection for TV shows
   const renderEpisodeGrid = () => (
     type === 'tv' && (
-      <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <div className="mt-6 bg-white dark:bg-[#000e14] rounded-xl shadow-lg p-6">
         {/* Add season selector */}
         <div className="mb-4">
           <select
@@ -897,9 +897,7 @@ function WatchPage() {
         </AnimatePresence>
 
         {/* Render sidebar */}
-        {/* Render sidebar */}
-        {/* {renderUserListsSidebar()} */}
-        <UserListsBottomSheet 
+        <UserListsSidebar 
           showUserLists={showUserLists} 
           setShowUserLists={setShowUserLists}
           watchHistory={watchHistory}

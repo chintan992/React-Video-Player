@@ -5,7 +5,7 @@ const ApiSelector = ({ availableApis, currentApi, onApiChange }) => {
   const { isDarkMode } = useDarkMode();
 
   return (
-    <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+    <div className="mt-6 bg-white dark:bg-[#000e14] rounded-xl shadow-lg p-6">
       <h2 className="text-lg font-semibold mb-4">Select Video Source</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {availableApis.filter(api => api.isWorking).map((api) => (

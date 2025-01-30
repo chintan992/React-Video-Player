@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Recommendations = ({ recommendations, handleListItemClick }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+  <div className="bg-white dark:bg-[#000e14] rounded-xl shadow-lg p-6">
     <h2 className="text-xl font-bold mb-4">Recommendations</h2>
     <div className="space-y-4">
       {recommendations.slice(0, 5).map((rec) => (
