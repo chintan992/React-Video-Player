@@ -15,6 +15,7 @@ import ShareTargetHandler from './components/ShareTargetHandler';
 import Footer from './components/Footer'; // Import Footer
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfUse from './components/TermsOfUse';
+import 'react-tooltip/dist/react-tooltip.css'
 // import SplashCursor from './background/SplashCursor';
 // import Settings from './components/Settings'; // Import the new Settings component
 // Lazy load components
