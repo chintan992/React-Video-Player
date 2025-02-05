@@ -55,6 +55,7 @@ const WatchPage = () => {
   const [similar, setSimilar] = useState([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentEpisode, setCurrentEpisode] = useState(null);
+  const [episodeLayout, setEpisodeLayout] = useState('list'); // 'list' or 'grid'
 
   const buttonClasses = {
     base: `flex items-center gap-2 p-4 rounded-full shadow-lg transition-all duration-300
@@ -420,22 +421,82 @@ const WatchPage = () => {
     );
   }
 
-  return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'}`}>
-      <ErrorBoundary>
-        <div ref={contentRef} className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-[1920px]">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-8">
-            <div className="xl:col-span-2 space-y-4">
-              <div className="mb-2 sm:mb-4 bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-2">
-                <SourceSelector
-                  videoSource={videoSource}
-                  handleSourceChange={handleSourceChange}
-                  showSourceMenu={showSourceMenu}
-                  setShowSourceMenu={setShowSourceMenu}
-                />
-              </div>
+  const pageTransition = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 20 }
+  };
 
-              <div className="relative rounded-lg overflow-hidden bg-[#000000] shadow-xl dark:shadow-black/50">
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  return (
+    <motion.div 
+      className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'}`}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageTransition}
+    >
+      <ErrorBoundary>
+        <motion.div 
+          ref={contentRef} 
+          className="container mx-auto px-2 sm:px-4 py-2 sm:py-6 max-w-[1920px]"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-4 lg:gap-8">
+            <div className="xl:col-span-2 space-y-2 sm:space-y-4">
+              <motion.div 
+                className="mb-1 sm:mb-4 relative z-[70]"
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 bg-black/40 
+                  backdrop-blur-sm rounded-lg p-1 sm:p-2 border border-white/10">
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 
+                    bg-white/5 rounded-md">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#02c39a]" 
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <span className="text-[11px] leading-none sm:text-sm text-white/80 font-medium 
+                      hidden xs:inline">Player Source</span>
+                    <span className="text-[11px] leading-none sm:text-sm text-white/80 font-medium 
+                      xs:hidden">Source</span>
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <SourceSelector
+                      videoSource={videoSource}
+                      handleSourceChange={handleSourceChange}
+                      showSourceMenu={showSourceMenu}
+                      setShowSourceMenu={setShowSourceMenu}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="relative rounded-lg overflow-hidden bg-[#000000] shadow-md sm:shadow-xl dark:shadow-black/50"
+                variants={itemVariants}
+                layoutId="videoPlayer"
+              >
                 {isVideoReady ? (
                   <VideoSection
                     ref={videoSectionRef}
@@ -447,34 +508,155 @@ const WatchPage = () => {
                     onSourceChange={handleSourceChange}
                   />
                 ) : (
-                  <div className="relative rounded-lg overflow-hidden bg-[#000000] shadow-xl dark:shadow-black/50 
-                    aspect-video flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#02c39a] border-t-transparent"></div>
-                  </div>
+                  <motion.div 
+                    className="relative rounded-lg overflow-hidden bg-[#000000] shadow-md sm:shadow-xl 
+                      dark:shadow-black/50 aspect-video flex items-center justify-center"
+                    animate={{ opacity: [0.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+                  >
+                    <motion.div 
+                      className="rounded-full h-8 w-8 sm:h-12 sm:w-12 border-3 sm:border-4 
+                        border-[#02c39a] border-t-transparent"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
 
               {type === 'tv' && (
-                <div className="w-full overflow-x-auto bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-2
-                  hover:bg-white/10 dark:hover:bg-gray-800/60 transition-colors duration-200">
-                  <EpisodeNavigation
-                    episodes={episodes}
-                    currentEpisodeNo={mediaData.episodeNo}
-                    currentEpisode={currentEpisode}
-                    season={mediaData.season}
-                    onEpisodeChange={(newEpisodeNo) => handleInputChange({
-                      target: { name: 'episodeNo', value: newEpisodeNo.toString() }
-                    })}
-                    isDarkMode={isDarkMode}
-                    isLoading={!isVideoReady}
-                  />
-                </div>
+                <motion.div 
+                  className="space-y-2 sm:space-y-3"
+                  variants={itemVariants}
+                >
+                  <motion.div 
+                    className="flex items-center justify-between gap-2 px-2"
+                    layout
+                  >
+                    <h3 className="text-sm sm:text-base font-medium text-white/90">Episodes</h3>
+                    <div className="flex items-center gap-2">
+                      <AnimatePresence mode="wait">
+                        {episodeLayout === 'list' && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="flex items-center gap-2 bg-black/20 rounded-lg px-2 py-1"
+                          >
+                            <span className="text-xs sm:text-sm text-white/60">Season:</span>
+                            <select
+                              value={mediaData.season}
+                              onChange={(e) => handleInputChange({
+                                target: { name: 'season', value: e.target.value }
+                              })}
+                              className="bg-transparent text-white/90 text-xs sm:text-sm font-medium 
+                                outline-none cursor-pointer hover:text-[#02c39a] transition-colors"
+                            >
+                              {seasons.map((season) => (
+                                <option 
+                                  key={season.season_number}
+                                  value={season.season_number}
+                                  className="bg-[#1a2634] text-white"
+                                >
+                                  {season.season_number}
+                                </option>
+                              ))}
+                            </select>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <div className="flex items-center gap-2 bg-black/20 rounded-lg p-1">
+                        <button
+                          onClick={() => setEpisodeLayout('list')}
+                          className={`p-1.5 rounded-md transition-all duration-200 ${
+                            episodeLayout === 'list'
+                              ? 'bg-[#02c39a] text-white'
+                              : 'text-white/60 hover:text-white/90'
+                          }`}
+                          aria-label="List view"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M4 6h16M4 12h16M4 18h16" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => setEpisodeLayout('grid')}
+                          className={`p-1.5 rounded-md transition-all duration-200 ${
+                            episodeLayout === 'grid'
+                              ? 'bg-[#02c39a] text-white'
+                              : 'text-white/60 hover:text-white/90'
+                          }`}
+                          aria-label="Grid view"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    className="w-full overflow-hidden bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm 
+                      rounded-lg hover:bg-white/10 dark:hover:bg-gray-800/60 
+                      transition-colors duration-200"
+                    layout
+                    variants={itemVariants}
+                  >
+                    <AnimatePresence mode="wait">
+                      {episodeLayout === 'list' ? (
+                        <motion.div
+                          key="list"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          className="min-w-[300px] p-1.5 sm:p-2"
+                        >
+                          <EpisodeNavigation
+                            episodes={episodes}
+                            currentEpisodeNo={mediaData.episodeNo}
+                            currentEpisode={currentEpisode}
+                            season={mediaData.season}
+                            onEpisodeChange={(newEpisodeNo) => handleInputChange({
+                              target: { name: 'episodeNo', value: newEpisodeNo.toString() }
+                            })}
+                            isDarkMode={isDarkMode}
+                            isLoading={!isVideoReady}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="grid"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="min-w-[300px] p-1.5 sm:p-2"
+                        >
+                          <EpisodeGrid
+                            type={type}
+                            mediaData={mediaData}
+                            episodes={episodes}
+                            seasons={seasons}
+                            currentEpisode={currentEpisode}
+                            handleInputChange={handleInputChange}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.div>
               )}
 
               {item && (
-                <div className="mt-4 sm:mt-6 bg-white dark:bg-[#1a2634] rounded-xl shadow-lg dark:shadow-black/50 
-                  p-3 sm:p-6 border border-gray-100/10 transition-all duration-200 
-                  hover:shadow-xl dark:hover:shadow-black/70">
+                <motion.div
+                  variants={itemVariants}
+                  className="mt-2 sm:mt-6 bg-white dark:bg-[#1a2634] rounded-lg sm:rounded-xl 
+                    shadow-md sm:shadow-lg dark:shadow-black/50 p-2 sm:p-6 border border-gray-100/10"
+                  whileHover={{ scale: 1.005 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <ContentTabs
                     item={item}
                     detailedOverview={detailedOverview}
@@ -486,25 +668,17 @@ const WatchPage = () => {
                     similar={similar}
                     handleListItemClick={handleListItemClick}
                   />
-                </div>
-              )}
-
-              {type === 'tv' && (
-                <div className="mt-4 sm:mt-6 bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
-                  <EpisodeGrid
-                    type={type}
-                    mediaData={mediaData}
-                    episodes={episodes}
-                    seasons={seasons}
-                    currentEpisode={currentEpisode}
-                    handleInputChange={handleInputChange}
-                  />
-                </div>
+                </motion.div>
               )}
             </div>
 
             <div className="xl:col-span-1">
-              <div className="sticky top-6 space-y-4">
+              <motion.div 
+                className="sticky top-6 space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
                 <div className="hidden sm:block lg:hidden xl:block">
                   <div className="bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
                     <Recommendations
@@ -534,20 +708,29 @@ const WatchPage = () => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6 bg-gradient-to-t from-[#0a1118] to-transparent">
-          <QuickActions
-            isInWatchlist={isInWatchlist}
-            isInFavorites={isInFavorites}
-            handleWatchlistToggle={handleWatchlistToggle}
-            handleFavoritesToggle={handleFavoritesToggle}
-            showQuickActions={showQuickActions}
-          />
-        </div>
+        <AnimatePresence>
+          {showQuickActions && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6 bg-gradient-to-t from-[#0a1118] to-transparent"
+            >
+              <QuickActions
+                isInWatchlist={isInWatchlist}
+                isInFavorites={isInFavorites}
+                handleWatchlistToggle={handleWatchlistToggle}
+                handleFavoritesToggle={handleFavoritesToggle}
+                showQuickActions={showQuickActions}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="fixed bottom-6 left-4 sm:left-6 z-[60]">
           <motion.button
@@ -599,26 +782,8 @@ const WatchPage = () => {
           favorites={favorites}
           handleListItemClick={handleListItemClick}
         />
-
-        <AnimatePresence>
-          {showScrollTop && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="fixed bottom-24 right-4 sm:right-6 z-[60] p-3 rounded-full bg-[#02c39a] dark:bg-[#00edb8] 
-                text-white shadow-lg dark:shadow-black/50 hover:scale-110 transition-transform duration-200
-                backdrop-blur-sm"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-            </motion.button>
-          )}
-        </AnimatePresence>
       </ErrorBoundary>
-    </div>
+    </motion.div>
   );
 };
 
