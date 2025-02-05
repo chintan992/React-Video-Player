@@ -53,6 +53,8 @@ const WatchPage = () => {
   const [crew, setCrew] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [similar, setSimilar] = useState([]);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentEpisode, setCurrentEpisode] = useState(null);
 
   const buttonClasses = {
     base: `flex items-center gap-2 p-4 rounded-full shadow-lg transition-all duration-300
@@ -273,6 +275,11 @@ const WatchPage = () => {
 
     setIsVideoReady(false);
 
+    if (name === 'episodeNo') {
+      const episode = episodes.find(ep => ep.episode_number.toString() === value);
+      setCurrentEpisode(episode);
+    }
+
     if (name === 'season') {
       setMediaData(prev => ({
         ...prev,
@@ -285,6 +292,9 @@ const WatchPage = () => {
         );
         const data = await response.json();
         setEpisodes(data.episodes || []);
+        if (data.episodes?.[0]) {
+          setCurrentEpisode(data.episodes[0]);
+        }
       } catch (error) {
         console.error('Error fetching episodes:', error);
       }
@@ -310,30 +320,16 @@ const WatchPage = () => {
   };
 
   useEffect(() => {
-    if (type === 'tv' && id && mediaData.season) {
-      const fetchEpisodesData = async () => {
-        try {
-          const response = await fetch(
-            `${BASE_URL}/tv/${id}/season/${mediaData.season}?api_key=${API_KEY}`
-          );
-          const data = await response.json();
-          setEpisodes(data.episodes || []);
-          setIsVideoReady(true);
-        } catch (error) {
-          console.error('Error fetching episodes:', error);
-        }
-      };
-
-      fetchEpisodesData();
+    if (episodes.length > 0 && mediaData.episodeNo) {
+      const episode = episodes.find(ep => ep.episode_number.toString() === mediaData.episodeNo);
+      setCurrentEpisode(episode);
     }
-  }, [type, id, mediaData.season]);
+  }, [episodes, mediaData.episodeNo]);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (contentRef.current) {
-        const scrollPosition = window.scrollY;
-        setShowQuickActions(scrollPosition > 200);
-      }
+      setShowScrollTop(window.scrollY > 400);
+      setShowQuickActions(window.scrollY > 200);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -375,27 +371,46 @@ const WatchPage = () => {
   }, [type, id]);
 
   if (isLoading) {
-    return <Skeleton isDarkMode={isDarkMode} />;
+    return (
+      <div className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118]' : 'bg-gray-50'}`}>
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-[1920px] animate-pulse">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-8">
+            <div className="xl:col-span-2 space-y-4">
+              <div className="h-12 bg-gray-200 dark:bg-gray-800/40 rounded-lg"></div>
+              <div className="aspect-video bg-gray-300 dark:bg-gray-800/60 rounded-lg"></div>
+              <div className="h-32 bg-gray-200 dark:bg-gray-800/40 rounded-lg"></div>
+            </div>
+            <div className="hidden xl:block">
+              <div className="h-96 bg-gray-200 dark:bg-gray-800/40 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center min-h-screen ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-50 text-black'}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full mx-4 transform transition-all hover:scale-105">
+      <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-[#0a1118]' : 'bg-gray-50'}`}>
+        <div className="bg-white dark:bg-[#1a2634] rounded-xl shadow-lg dark:shadow-black/50 p-8 max-w-md w-full mx-4 
+          transform transition-all hover:scale-105 border border-gray-100/10 backdrop-blur-sm">
           <div className="text-center">
-            <div className="bg-red-100 dark:bg-red-900 rounded-full p-3 w-16 h-16 mx-auto mb-4">
-              <svg className="w-10 h-10 text-red-500 dark:text-red-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <div className="bg-red-100/10 dark:bg-red-900/20 rounded-full p-3 w-16 h-16 mx-auto mb-4 
+              backdrop-blur-sm border border-red-500/20">
+              <svg className="w-10 h-10 text-red-500 dark:text-red-400 mx-auto animate-pulse" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Oops! Something went wrong</h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg
-                hover:from-blue-600 hover:to-blue-700 transition-all duration-200
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                transform hover:-translate-y-0.5"
+              className="w-full px-6 py-3 bg-gradient-to-r from-[#02c39a] to-[#00a896] dark:from-[#00edb8] dark:to-[#00c39a] 
+                text-white rounded-lg hover:from-[#00a896] hover:to-[#019485] dark:hover:from-[#00c39a] dark:hover:to-[#00a896] 
+                transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#02c39a] 
+                dark:focus:ring-[#00edb8] transform hover:-translate-y-0.5 shadow-lg dark:shadow-black/50"
             >
               Try Again
             </button>
@@ -406,45 +421,60 @@ const WatchPage = () => {
   }
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-[#000e14] text-white' : 'bg-gray-50 text-black'}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'}`}>
       <ErrorBoundary>
-        <div ref={contentRef} className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mobile:grid-cols-1">
-            <div className="lg:col-span-2">
-              <SourceSelector
-                videoSource={videoSource}
-                handleSourceChange={handleSourceChange}
-                showSourceMenu={showSourceMenu}
-                setShowSourceMenu={setShowSourceMenu}
-              />
-
-              <div className="relative">
-                <VideoSection
-                  ref={videoSectionRef}
-                  mediaData={{ ...mediaData, apiType: videoSource }}
-                  isVideoReady={isVideoReady}
-                  onSubmit={handleSubmit}
-                  iframeRef={iframeRef}
-                  allowFullscreen={true}
-                  onSourceChange={handleSourceChange}
+        <div ref={contentRef} className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-[1920px]">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-8">
+            <div className="xl:col-span-2 space-y-4">
+              <div className="mb-2 sm:mb-4 bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-2">
+                <SourceSelector
+                  videoSource={videoSource}
+                  handleSourceChange={handleSourceChange}
+                  showSourceMenu={showSourceMenu}
+                  setShowSourceMenu={setShowSourceMenu}
                 />
               </div>
 
+              <div className="relative rounded-lg overflow-hidden bg-[#000000] shadow-xl dark:shadow-black/50">
+                {isVideoReady ? (
+                  <VideoSection
+                    ref={videoSectionRef}
+                    mediaData={{ ...mediaData, apiType: videoSource }}
+                    isVideoReady={isVideoReady}
+                    onSubmit={handleSubmit}
+                    iframeRef={iframeRef}
+                    allowFullscreen={true}
+                    onSourceChange={handleSourceChange}
+                  />
+                ) : (
+                  <div className="relative rounded-lg overflow-hidden bg-[#000000] shadow-xl dark:shadow-black/50 
+                    aspect-video flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#02c39a] border-t-transparent"></div>
+                  </div>
+                )}
+              </div>
+
               {type === 'tv' && (
-                <EpisodeNavigation
-                  episodes={episodes}
-                  currentEpisodeNo={mediaData.episodeNo}
-                  season={mediaData.season}
-                  onEpisodeChange={(newEpisodeNo) => handleInputChange({
-                    target: { name: 'episodeNo', value: newEpisodeNo.toString() }
-                  })}
-                  isDarkMode={isDarkMode}
-                  isLoading={!isVideoReady}
-                />
+                <div className="w-full overflow-x-auto bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-2
+                  hover:bg-white/10 dark:hover:bg-gray-800/60 transition-colors duration-200">
+                  <EpisodeNavigation
+                    episodes={episodes}
+                    currentEpisodeNo={mediaData.episodeNo}
+                    currentEpisode={currentEpisode}
+                    season={mediaData.season}
+                    onEpisodeChange={(newEpisodeNo) => handleInputChange({
+                      target: { name: 'episodeNo', value: newEpisodeNo.toString() }
+                    })}
+                    isDarkMode={isDarkMode}
+                    isLoading={!isVideoReady}
+                  />
+                </div>
               )}
 
               {item && (
-                <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <div className="mt-4 sm:mt-6 bg-white dark:bg-[#1a2634] rounded-xl shadow-lg dark:shadow-black/50 
+                  p-3 sm:p-6 border border-gray-100/10 transition-all duration-200 
+                  hover:shadow-xl dark:hover:shadow-black/70">
                   <ContentTabs
                     item={item}
                     detailedOverview={detailedOverview}
@@ -460,48 +490,81 @@ const WatchPage = () => {
               )}
 
               {type === 'tv' && (
-                <EpisodeGrid
-                  type={type}
-                  mediaData={mediaData}
-                  episodes={episodes}
-                  seasons={seasons} // Pass seasons data to EpisodeGrid
-                  handleInputChange={handleInputChange}
-                />
+                <div className="mt-4 sm:mt-6 bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
+                  <EpisodeGrid
+                    type={type}
+                    mediaData={mediaData}
+                    episodes={episodes}
+                    seasons={seasons}
+                    currentEpisode={currentEpisode}
+                    handleInputChange={handleInputChange}
+                  />
+                </div>
               )}
             </div>
 
-            <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                <Recommendations
-                  recommendations={recommendations}
-                  handleListItemClick={handleListItemClick}
-                />
+            <div className="xl:col-span-1">
+              <div className="sticky top-6 space-y-4">
+                <div className="hidden sm:block lg:hidden xl:block">
+                  <div className="bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
+                    <Recommendations
+                      recommendations={recommendations}
+                      handleListItemClick={handleListItemClick}
+                    />
+                  </div>
+                </div>
+                <div className="block sm:hidden lg:block xl:hidden">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
+                    {recommendations.slice(0, 6).map((item) => (
+                      <div key={item.id} 
+                        className="flex flex-col items-center group hover:scale-105 transition-transform duration-200"
+                        onClick={() => handleListItemClick(item)}
+                      >
+                        <div className="relative overflow-hidden rounded-lg shadow-lg dark:shadow-black/30">
+                          <img
+                            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                            alt={item.title || item.name}
+                            className="w-24 h-36 object-cover transform group-hover:scale-110 transition-transform duration-200"
+                          />
+                        </div>
+                        <p className="text-center text-sm mt-2 text-gray-200 group-hover:text-[#02c39a] transition-colors">
+                          {item.title || item.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <QuickActions
-          isInWatchlist={isInWatchlist}
-          isInFavorites={isInFavorites}
-          handleWatchlistToggle={handleWatchlistToggle}
-          handleFavoritesToggle={handleFavoritesToggle}
-          showQuickActions={showQuickActions}
-        />
+        <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6 bg-gradient-to-t from-[#0a1118] to-transparent">
+          <QuickActions
+            isInWatchlist={isInWatchlist}
+            isInFavorites={isInFavorites}
+            handleWatchlistToggle={handleWatchlistToggle}
+            handleFavoritesToggle={handleFavoritesToggle}
+            showQuickActions={showQuickActions}
+          />
+        </div>
 
-        <div className="fixed bottom-6 left-6 z-[60]">
+        <div className="fixed bottom-6 left-4 sm:left-6 z-[60]">
           <motion.button
             onClick={() => setShowUserLists(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`${buttonClasses.base} ${showUserLists ? buttonClasses.active : buttonClasses.default}
-              group relative`}
+            className={`${buttonClasses.base} ${
+              showUserLists 
+                ? 'bg-[#c3022b] text-white hover:bg-[#a80016] dark:bg-[#ff0336] dark:hover:bg-[#d4002d]' 
+                : 'bg-[#02c39a] text-white hover:bg-[#00a896] dark:bg-[#00edb8] dark:hover:bg-[#00c39a]'
+            } group relative text-sm sm:text-base backdrop-blur-sm shadow-lg dark:shadow-black/50`}
             aria-label="Open user lists"
           >
             <div className="relative flex items-center">
               <motion.svg
                 animate={{ rotate: showUserLists ? 90 : 0 }}
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -522,7 +585,7 @@ const WatchPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-[65]"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[65]"
               onClick={() => setShowUserLists(false)}
             />
           )}
@@ -536,6 +599,24 @@ const WatchPage = () => {
           favorites={favorites}
           handleListItemClick={handleListItemClick}
         />
+
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="fixed bottom-24 right-4 sm:right-6 z-[60] p-3 rounded-full bg-[#02c39a] dark:bg-[#00edb8] 
+                text-white shadow-lg dark:shadow-black/50 hover:scale-110 transition-transform duration-200
+                backdrop-blur-sm"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </ErrorBoundary>
     </div>
   );
