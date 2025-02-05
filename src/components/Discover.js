@@ -19,12 +19,6 @@ const streamingServices = [
 ];
 
 function Discover() {
-  const [categories, setCategories] = useState({
-    latestMovies: [],
-    trendingMovies: [],
-    latestTVShows: [],
-    trendingTVShows: []
-  });
   const [featuredContent, setFeaturedContent] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -39,7 +33,7 @@ function Discover() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isStreamingLoading, setIsStreamingLoading] = useState(false);
-  const [noResults, setNoResults] = useState(false); // New state for no results
+  const [noResults, setNoResults] = useState(false);
 
   const handleWatchlistToggle = (item) => {
     setWatchlist(prev => {
@@ -130,238 +124,147 @@ function Discover() {
     }
   }, []);
 
-  const fetchData = React.useCallback(async () => {
+  const fetchFilteredContent = useCallback(async (category, serviceId, pageNum = 1) => {
+    if (pageNum === 1) {
+      setIsStreamingLoading(true);
+    }
+    setNoResults(false);
+    
+    try {
+      let endpoints = [];
+      
+      if (serviceId) {
+        // When streaming service is selected
+        if (category === 'movies' || category === 'all') {
+          endpoints.push(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US&page=${pageNum}`);
+        }
+        if (category === 'tv' || category === 'all') {
+          endpoints.push(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US&page=${pageNum}`);
+        }
+      } else {
+        // When only category is selected
+        switch (category) {
+          case 'movies':
+            endpoints.push(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${pageNum}`);
+            break;
+          case 'tv':
+            endpoints.push(`${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${pageNum}`);
+            break;
+          case 'trending':
+            endpoints.push(`${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${pageNum}`);
+            break;
+          default:
+            endpoints.push(`${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${pageNum}`);
+        }
+      }
+
+      const responses = await Promise.all(endpoints.map(endpoint => fetch(endpoint)));
+      const data = await Promise.all(responses.map(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      }));
+      
+      let combinedResults = [];
+      data.forEach((response, index) => {
+        if (!response.results) {
+          console.error('Invalid API response:', response);
+          return;
+        }
+
+        const mediaType = endpoints[index].includes('/movie/') || endpoints[index].includes('discover/movie') 
+          ? 'movie' 
+          : endpoints[index].includes('/tv/') || endpoints[index].includes('discover/tv')
+            ? 'tv'
+            : null;
+            
+        const results = response.results.map(item => ({
+          ...item,
+          media_type: item.media_type || mediaType
+        }));
+        combinedResults = [...combinedResults, ...results];
+      });
+
+      combinedResults = combinedResults.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+
+      if (pageNum === 1) {
+        setMediaItems(combinedResults);
+      } else {
+        setMediaItems(prev => [...prev, ...combinedResults]);
+      }
+
+      setHasMore(combinedResults.length > 0);
+      setNoResults(combinedResults.length === 0);
+      
+    } catch (error) {
+      console.error('Error fetching filtered content:', error);
+      setError('An error occurred while fetching content. Please try again.');
+    } finally {
+      if (pageNum === 1) {
+        setIsStreamingLoading(false);
+      }
+    }
+  }, []);
+
+  const fetchData = useCallback(async () => {
     setIsInitialLoading(true);
     try {
-      if (!process.env.REACT_APP_TMDB_API_KEY) {
-        throw new Error('TMDB API key is not configured. Please check your environment variables.');
-      }
-
-      const endpoints = {
-        latestMovies: `${BASE_URL}/movie/now_playing?api_key=${API_KEY}`,
-        trendingMovies: `${BASE_URL}/trending/movie/week?api_key=${API_KEY}`,
-        latestTVShows: `${BASE_URL}/tv/on_the_air?api_key=${API_KEY}`,
-        trendingTVShows: `${BASE_URL}/trending/tv/week?api_key=${API_KEY}`
-      };
-
-      const newCategories = {};
-
-      await Promise.all([
-        fetchFeaturedContent(),
-        ...Object.entries(endpoints).map(async ([key, url]) => {
-          try {
-            const cachedData = getCachedData(key);
-            if (cachedData) {
-              newCategories[key] = cachedData;
-              return;
-            }
-
-            const response = await fetch(url);
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.status_message || `Failed to fetch ${key}`);
-            }
-
-            const data = await response.json();
-            const results = data.results.slice(0, 10);
-            newCategories[key] = results;
-            setCachedData(key, results);
-          } catch (err) {
-            console.error(`Error fetching ${key}:`, err);
-            newCategories[key] = [];
-          }
-        })
-      ]);
-
-      const allCategoriesEmpty = Object.values(newCategories).every(arr => arr.length === 0);
-      if (allCategoriesEmpty) {
-        throw new Error('Failed to fetch content. Please check your API configuration and try again.');
-      }
-
-      setCategories(newCategories);
-      setError(null);
+      // Fetch featured content first
+      await fetchFeaturedContent();
+      
+      // Then fetch initial content
+      await fetchFilteredContent('all', null, 1);
+      
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError(error.message || 'An error occurred while fetching data. Please try again.');
+      console.error('Error in initial data fetch:', error);
+      setError('Failed to load content. Please try again.');
     } finally {
       setIsInitialLoading(false);
     }
-  }, [fetchFeaturedContent]);
-
-  const filterByStreamingService = async (serviceId) => {
-    setIsStreamingLoading(true);
-    setNoResults(false); // Reset no results state
-    try {
-      const cacheKey = `streaming_${serviceId}`;
-      const cachedData = getCachedData(cacheKey);
-
-      if (cachedData) {
-        setMediaItems(cachedData);
-        return;
-      }
-
-      const moviesEndpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
-      const tvShowsEndpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${serviceId}&watch_region=US`;
-
-      const [moviesResponse, tvShowsResponse] = await Promise.all([
-        fetch(moviesEndpoint),
-        fetch(tvShowsEndpoint)
-      ]);
-
-      const [moviesData, tvShowsData] = await Promise.all([
-        moviesResponse.json(),
-        tvShowsResponse.json()
-      ]);
-
-      console.log('Movies Data:', moviesData); // Debugging log
-      console.log('TV Shows Data:', tvShowsData); // Debugging log
-
-      const filteredItems = [
-        ...moviesData.results.map(item => ({ ...item, media_type: 'movie' })),
-        ...tvShowsData.results.map(item => ({ ...item, media_type: 'tv' }))
-      ];
-
-      console.log('Filtered Items:', filteredItems); // Debugging log
-
-      if (filteredItems.length === 0) {
-        setNoResults(true); // Set no results state
-      }
-
-      setCachedData(cacheKey, filteredItems);
-      setMediaItems(filteredItems);
-    } catch (error) {
-      console.error('Error fetching streaming service data:', error);
-      setError('An error occurred while fetching streaming service data. Please try again.');
-    } finally {
-      setIsStreamingLoading(false);
-    }
-  };
-
-  const handleViewMore = async () => {
-    if (isLoadingMore) return;
-    setIsLoadingMore(true);
-    const nextPage = page + 1;
-
-    try {
-      let endpoint;
-      const currentCategory = activeCategory;
-
-      if (activeStreamingService) {
-        switch (currentCategory) {
-          case 'movies':
-            endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
-            break;
-          case 'tv':
-            endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
-            break;
-          default:
-            endpoint = `${BASE_URL}/discover/all?api_key=${API_KEY}&with_watch_providers=${activeStreamingService}&watch_region=US&page=${nextPage}`;
-        }
-      } else {
-        switch (currentCategory) {
-          case 'movies':
-            endpoint = `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${nextPage}`;
-            break;
-          case 'tv':
-            endpoint = `${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${nextPage}`;
-            break;
-          case 'trending':
-            endpoint = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${nextPage}`;
-            break;
-          default:
-            endpoint = `${BASE_URL}/trending/all/week?api_key=${API_KEY}&page=${nextPage}`;
-        }
-      }
-
-      const response = await fetch(endpoint);
-      const data = await response.json();
-
-      if (!data.results || data.results.length === 0) {
-        setHasMore(false);
-      } else {
-        setMediaItems(prevItems => {
-          const newItems = data.results.filter(newItem =>
-            !prevItems.some(existingItem => existingItem.id === newItem.id)
-          );
-          return [...prevItems, ...newItems];
-        });
-        setPage(nextPage);
-      }
-    } catch (error) {
-      console.error('Error fetching more items:', error);
-      toast.error('Failed to load more items');
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
+  }, [fetchFeaturedContent, fetchFilteredContent]);
 
   const handleCategoryChange = useCallback((category) => {
     setActiveCategory(category);
     setPage(1);
     setHasMore(true);
-    setMediaItems([]);
+    fetchFilteredContent(category, activeStreamingService, 1);
+  }, [activeStreamingService, fetchFilteredContent]);
 
-    let filteredItems = [];
-    switch (category) {
-      case 'movies':
-        filteredItems = [...categories.latestMovies, ...categories.trendingMovies]
-          .filter((item, index, self) =>
-            index === self.findIndex((t) => t.id === item.id)
-          )
-          .map(item => ({ ...item, media_type: 'movie' }));
-        break;
-      case 'tv':
-        filteredItems = [...categories.latestTVShows, ...categories.trendingTVShows]
-          .filter((item, index, self) =>
-            index === self.findIndex((t) => t.id === item.id)
-          )
-          .map(item => ({ ...item, media_type: 'tv' }));
-        break;
-      case 'trending':
-        filteredItems = [...categories.trendingMovies, ...categories.trendingTVShows]
-          .filter((item, index, self) =>
-            index === self.findIndex((t) => t.id === item.id)
-          )
-          .map(item => ({
-            ...item,
-            media_type: item.first_air_date ? 'tv' : 'movie'
-          }));
-        break;
-      default:
-        filteredItems = [
-          ...categories.latestMovies.map(item => ({ ...item, media_type: 'movie' })),
-          ...categories.trendingMovies.map(item => ({ ...item, media_type: 'movie' })),
-          ...categories.latestTVShows.map(item => ({ ...item, media_type: 'tv' })),
-          ...categories.trendingTVShows.map(item => ({ ...item, media_type: 'tv' }))
-        ].filter((item, index, self) =>
-          index === self.findIndex((t) => t.id === item.id)
-        );
+  const handleStreamingServiceClick = useCallback((serviceId) => {
+    setPage(1);
+    setHasMore(true);
+    
+    if (activeStreamingService === serviceId) {
+      setActiveStreamingService(null);
+      fetchFilteredContent(activeCategory, null, 1);
+    } else {
+      setActiveStreamingService(serviceId);
+      fetchFilteredContent(activeCategory, serviceId, 1);
     }
+  }, [activeCategory, activeStreamingService, fetchFilteredContent]);
 
-    setMediaItems(filteredItems);
-  }, [categories]);
-
-  useEffect(() => {
-    handleCategoryChange(activeCategory);
-  }, [activeCategory, handleCategoryChange]);
+  const handleViewMore = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    
+    try {
+      const nextPage = page + 1;
+      await fetchFilteredContent(activeCategory, activeStreamingService, nextPage);
+      setPage(nextPage);
+    } catch (error) {
+      console.error('Error loading more items:', error);
+      toast.error('Failed to load more items');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [activeCategory, activeStreamingService, fetchFilteredContent, isLoadingMore, page]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleStreamingServiceClick = (serviceId) => {
-    setPage(1);
-    setHasMore(true);
-    setMediaItems([]);
-
-    if (activeStreamingService === serviceId) {
-      setActiveStreamingService(null);
-      handleCategoryChange(activeCategory);
-    } else {
-      setActiveStreamingService(serviceId);
-      filterByStreamingService(serviceId);
-    }
-  };
 
   if (isInitialLoading) {
     return (
@@ -413,7 +316,7 @@ function Discover() {
           isStreamingLoading={isStreamingLoading}
           watchlist={watchlist}
           handleWatchlistToggle={handleWatchlistToggle}
-          noResults={noResults} // Pass noResults state
+          noResults={noResults}
         />
 
         {/* View More Button */}
