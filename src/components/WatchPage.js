@@ -9,7 +9,6 @@ import { useAuth } from '../context/AuthContext';
 import SourceSelector from './SourceSelector';
 import Recommendations from './Recommendations';
 import fetchEpisodes from '../utils/fetchEpisodes';
-import Skeleton from './Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import ErrorBoundary from './ErrorBoundaryWatchPage';
 import EpisodeNavigation from './EpisodeNavigation';
@@ -53,7 +52,6 @@ const WatchPage = () => {
   const [crew, setCrew] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [similar, setSimilar] = useState([]);
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentEpisode, setCurrentEpisode] = useState(null);
   const [episodeLayout, setEpisodeLayout] = useState('list'); // 'list' or 'grid'
 
@@ -178,10 +176,6 @@ const WatchPage = () => {
           movieId: type === 'movie' ? id : '',
         }));
 
-        const tvDetailsResponse = await fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`);
-        const tvDetailsData = await tvDetailsResponse.json();
-        setSeasons(tvDetailsData.seasons || []); // Fetch and store seasons here as well
-
         const recommendationsData = await getRecommendations(type, id);
         setRecommendations(recommendationsData);
       } catch (err) {
@@ -201,6 +195,19 @@ const WatchPage = () => {
   useEffect(() => {
     fetchEpisodes(type, id, mediaData, setMediaData, setEpisodes, setIsVideoReady, BASE_URL, API_KEY);
   }, [type, id, mediaData]);
+
+  const fetchSeasonEpisodes = async (seasonValue) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tv/${id}/season/${seasonValue}?api_key=${API_KEY}`);
+      const data = await response.json();
+      setEpisodes(data.episodes || []);
+      if (data.episodes?.[0]) {
+        setCurrentEpisode(data.episodes[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching episodes:', error);
+    }
+  };
 
   const handleWatchlistToggle = async () => {
     if (isInWatchlist) {
@@ -287,18 +294,7 @@ const WatchPage = () => {
         episodeNo: '1'
       }));
 
-      try {
-        const response = await fetch(
-          `${BASE_URL}/tv/${id}/season/${value}?api_key=${API_KEY}`
-        );
-        const data = await response.json();
-        setEpisodes(data.episodes || []);
-        if (data.episodes?.[0]) {
-          setCurrentEpisode(data.episodes[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching episodes:', error);
-      }
+      fetchSeasonEpisodes(value);
     }
 
     if (type === 'tv') {
@@ -329,7 +325,6 @@ const WatchPage = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
       setShowQuickActions(window.scrollY > 200);
     };
     window.addEventListener('scroll', handleScroll);
@@ -445,7 +440,7 @@ const WatchPage = () => {
 
   return (
     <motion.div 
-      className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'}`}
+      className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'} px-4 sm:px-6 md:px-8`}
       initial="initial"
       animate="animate"
       exit="exit"
@@ -454,13 +449,13 @@ const WatchPage = () => {
       <ErrorBoundary>
         <motion.div 
           ref={contentRef} 
-          className="container mx-auto px-2 sm:px-4 py-2 sm:py-6 max-w-[1920px]"
+          className="container mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 max-w-[1920px]"
           variants={containerVariants}
           initial="hidden"
           animate="show"
         >
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-4 lg:gap-8">
-            <div className="xl:col-span-2 space-y-2 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8">
+            <div className="md:col-span-2 space-y-2 sm:space-y-4">
               <motion.div 
                 className="mb-1 sm:mb-4 relative z-[70]"
                 variants={itemVariants}
@@ -549,8 +544,8 @@ const WatchPage = () => {
                               onChange={(e) => handleInputChange({
                                 target: { name: 'season', value: e.target.value }
                               })}
-                              className="bg-transparent text-white/90 text-xs sm:text-sm font-medium 
-                                outline-none cursor-pointer hover:text-[#02c39a] transition-colors"
+                              className="bg-transparent text-white/90 text-sm sm:text-base font-medium 
+                                outline-none cursor-pointer hover:text-[#02c39a] transition-colors py-1 px-2"
                             >
                               {seasons.map((season) => (
                                 <option 
@@ -672,14 +667,14 @@ const WatchPage = () => {
               )}
             </div>
 
-            <div className="xl:col-span-1">
+            <div>
               <motion.div 
                 className="sticky top-6 space-y-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <div className="hidden sm:block lg:hidden xl:block">
+                <div className="hidden lg:block">
                   <div className="bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
                     <Recommendations
                       recommendations={recommendations}
@@ -741,7 +736,7 @@ const WatchPage = () => {
               showUserLists 
                 ? 'bg-[#c3022b] text-white hover:bg-[#a80016] dark:bg-[#ff0336] dark:hover:bg-[#d4002d]' 
                 : 'bg-[#02c39a] text-white hover:bg-[#00a896] dark:bg-[#00edb8] dark:hover:bg-[#00c39a]'
-            } group relative text-sm sm:text-base backdrop-blur-sm shadow-lg dark:shadow-black/50`}
+            } group relative text-base sm:text-lg md:text-xl backdrop-blur-sm shadow-lg dark:shadow-black/50`}
             aria-label="Open user lists"
           >
             <div className="relative flex items-center">
