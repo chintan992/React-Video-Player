@@ -16,9 +16,19 @@ import ContentTabs from './ContentTabs';
 import QuickActions from './QuickActions';
 import EpisodeGrid from './EpisodeGrid';
 import UserListsSidebar from './UserListsSidebar';
+import UseBrave from './UseBrave';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = process.env.REACT_APP_TMDB_BASE_URL;
+
+const lightModeStyles = {
+  containerBg: 'bg-white',
+  textColor: 'text-gray-900',
+  cardBg: 'bg-white',
+  cardBorder: 'border border-gray-200',
+  buttonBg: 'bg-blue-500 hover:bg-blue-600',
+  buttonText: 'text-white'
+};
 
 const WatchPage = () => {
   const { type, id } = useParams();
@@ -440,16 +450,18 @@ const WatchPage = () => {
 
   return (
     <motion.div 
-      className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : 'bg-gray-50 text-black'} px-4 sm:px-6 md:px-8`}
+      className={`min-h-screen ${isDarkMode ? 'bg-[#0a1118] text-gray-100' : `${lightModeStyles.containerBg} ${lightModeStyles.textColor}`} px-4 sm:px-6 md:px-8`}
       initial="initial"
       animate="animate"
       exit="exit"
       variants={pageTransition}
     >
       <ErrorBoundary>
+        {/* New component: Suggest using Brave Browser */}
+        <UseBrave />
         <motion.div 
           ref={contentRef} 
-          className="container mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 max-w-[1920px]"
+          className={`container mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 max-w-[1920px] ${isDarkMode ? '' : lightModeStyles.cardBg}`}
           variants={containerVariants}
           initial="hidden"
           animate="show"
@@ -469,7 +481,7 @@ const WatchPage = () => {
                     <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#02c39a]" 
                       viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2z" />
                     </svg>
                     <span className="text-[11px] leading-none sm:text-sm text-white/80 font-medium 
                       hidden xs:inline">Player Source</span>
@@ -647,8 +659,8 @@ const WatchPage = () => {
               {item && (
                 <motion.div
                   variants={itemVariants}
-                  className="mt-2 sm:mt-6 bg-white dark:bg-[#1a2634] rounded-lg sm:rounded-xl 
-                    shadow-md sm:shadow-lg dark:shadow-black/50 p-2 sm:p-6 border border-gray-100/10"
+                  className={`mt-2 sm:mt-6 ${isDarkMode ? 'bg-white dark:bg-[#1a2634]' : `${lightModeStyles.cardBg} ${lightModeStyles.cardBorder}`} rounded-lg sm:rounded-xl 
+                    shadow-md sm:shadow-lg dark:shadow-black/50 p-2 sm:p-6`}
                   whileHover={{ scale: 1.005 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -675,7 +687,7 @@ const WatchPage = () => {
                 transition={{ delay: 0.4 }}
               >
                 <div className="hidden lg:block">
-                  <div className="bg-white/5 dark:bg-gray-800/40 backdrop-blur-sm rounded-lg p-4">
+                  <div className={`p-4 ${isDarkMode ? 'bg-white/5 dark:bg-gray-800/40' : `${lightModeStyles.cardBg} ${lightModeStyles.cardBorder}` } backdrop-blur-sm rounded-lg`}>
                     <Recommendations
                       recommendations={recommendations}
                       handleListItemClick={handleListItemClick}
@@ -732,11 +744,10 @@ const WatchPage = () => {
             onClick={() => setShowUserLists(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`${buttonClasses.base} ${
-              showUserLists 
-                ? 'bg-[#c3022b] text-white hover:bg-[#a80016] dark:bg-[#ff0336] dark:hover:bg-[#d4002d]' 
-                : 'bg-[#02c39a] text-white hover:bg-[#00a896] dark:bg-[#00edb8] dark:hover:bg-[#00c39a]'
-            } group relative text-base sm:text-lg md:text-xl backdrop-blur-sm shadow-lg dark:shadow-black/50`}
+            className={`${buttonClasses.base} ${showUserLists 
+              ? 'bg-[#c3022b] text-white hover:bg-[#a80016] dark:bg-[#ff0336] dark:hover:bg-[#d4002d]' 
+              : isDarkMode ? 'bg-[#02c39a] text-white hover:bg-[#00a896] dark:bg-[#00edb8] dark:hover:bg-[#00c39a]' 
+                : `${lightModeStyles.buttonBg} ${lightModeStyles.buttonText}` } group relative text-base sm:text-lg md:text-xl backdrop-blur-sm shadow-lg dark:shadow-black/50`}
             aria-label="Open user lists"
           >
             <div className="relative flex items-center">

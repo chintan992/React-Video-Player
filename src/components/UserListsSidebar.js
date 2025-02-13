@@ -11,7 +11,7 @@ const UserListsSidebar = ({
   favorites,
   handleListItemClick
 }) => {
-  const { isDarkMode } = useDarkMode();
+  useDarkMode();
   const sidebarRef = useRef(null);
 
   // Add state for tracking minimized sections
