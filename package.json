@@ -11,7 +11,7 @@
     "firebase": "^11.0.2",
     "framer-motion": "^11.18.2",
     "lodash.debounce": "^4.0.8",
-    "postprocessing": "^6.36.6",
+    "postprocessing": "^6.36.7",
     "react": "^19.0.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
