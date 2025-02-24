@@ -488,13 +488,28 @@ const WatchPage = () => {
                     <span className="text-[11px] leading-none sm:text-sm text-white/80 font-medium 
                       xs:hidden">Source</span>
                   </div>
-                  <div className="flex-1 min-w-[120px]">
+                  <div className="flex items-center gap-2 flex-1 min-w-[120px]">
                     <SourceSelector
                       videoSource={videoSource}
                       handleSourceChange={handleSourceChange}
                       showSourceMenu={showSourceMenu}
                       setShowSourceMenu={setShowSourceMenu}
                     />
+                    <a
+                      href={type === 'movie' 
+                        ? `https://dl.vidsrc.vip/movie/${id}`
+                        : `https://dl.vidsrc.vip/tv/${id}/${mediaData.season}/${mediaData.episodeNo}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-lg text-white/60 hover:text-white/90 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span className="text-xs sm:text-sm">Download</span>
+                    </a>
                   </div>
                 </div>
               </motion.div>
