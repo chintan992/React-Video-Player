@@ -29,7 +29,7 @@
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.1.15",
     "three": "^0.172.0",
-    "web-vitals": "^2.1.4",
+    "web-vitals": "^4.2.4",
     "workbox-core": "^7.3.0",
     "workbox-expiration": "^7.3.0",
     "workbox-precaching": "^7.3.0",
